@@ -1,9 +1,11 @@
-from flask import Flask
-import psycopg2
+from app import app
 
-app = Flask(__name__)
+@app.route('/')
+@app.route('/index')
+def index():
+    return "Hello, World!"
 
-@app.route("/members")
+@app.route('/members')
 def members():
     return {"members": ["Member1", "Member2", "Member3"]}
 

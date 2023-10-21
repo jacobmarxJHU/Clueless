@@ -2,8 +2,6 @@
 venv/
 
 .flaskenv
-test_connect.py
-testSQLconn.py
 config.py
 __pycache__
 db_credentials.txt

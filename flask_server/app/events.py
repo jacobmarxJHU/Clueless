@@ -2,6 +2,7 @@ from flask import request
 from flask_socketio import emit, join_room
 from .utility import generate_room_code
 from .models import Users, ActiveGames, db
+import json
 
 from .extensions import socketio
 
@@ -13,6 +14,8 @@ def handle_connect():
 @socketio.on("user_join")
 def handle_user_join(data):
     print("User join")
+    print(data)
+    data = json.loads(data)
     print(data)
     name = data['username']
     game = data['gameCode']

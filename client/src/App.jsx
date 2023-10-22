@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Button, TextField, Typography, Paper, AppBar, Toolbar, makeStyles } from '@material-ui/core';
+import { Button, TextField, Typography, Paper, AppBar, Toolbar, makeStyles, List, ListItem, Divider, Box, ListItemIcon, Icon } from '@material-ui/core';
+import ChatIcon from '@material-ui/icons/Chat';
 import UserContext from './UserContext';  // assuming the UserContext is in the same directory
 import { io } from "socket.io-client"
 
-const useStyles = makeStyles({
+const useStyles = makeStyles((theme) => ({
     container: {
         display: 'flex',
         flexDirection: 'column',
@@ -35,8 +36,22 @@ const useStyles = makeStyles({
     loggedInUsername: {
         marginLeft: 'auto',
         marginRight: 10
+    },
+    chatBox: {
+        marginTop: theme.spacing(2),
+        maxHeight: '300px',
+        overflow: 'auto',
+        padding: theme.spacing(2),
+        backgroundColor: '#F3F6F9'
+    },
+    chatMessage: {
+        listStyleType: 'disc',
+        backgroundColor: theme.palette.background.paper,
+        padding: theme.spacing(1),
+        borderRadius: theme.spacing(1),
+        marginBottom: theme.spacing(1),
     }
-});
+}));
 
 function App() {
     const classes = useStyles();
@@ -153,7 +168,7 @@ function App() {
         <Paper className={classes.container}>
             <Typography variant="h4" className={classes.title}>Clue-Less</Typography>
             <Typography variant="h5" className={classes.header}>Login</Typography>
-    
+
             {!isSubmitted ? (
                 <form onSubmit={handleSubmit}>
                     <TextField 
@@ -178,23 +193,29 @@ function App() {
                     </Button>
                 </form>
             ) : null}
-    
+
             {message && <Typography variant="h6" style={{ marginTop: 20 }}>{message}</Typography>}
-    
-            {/* Chat Messages Display */}
+
+            {/* Chat Box */}
             {isSubmitted && (
-                <div>
-                    <Typography variant="h6" style={{ marginTop: 20, marginBottom: 10 }}>Chat</Typography>
-                    <ul id="chat-messages">
+                <div className={classes.chatBox}>
+                    <Typography variant="h6">Event Log</Typography>
+                    <List>
                         {chatMessages.map((chatMessage, idx) => (
-                            <li key={idx}>{chatMessage}</li>
+                            <ListItem key={idx} className={classes.chatMessage}>
+                                <ListItemIcon>
+                                    <ChatIcon color="primary" />
+                                </ListItemIcon>
+                                <Typography variant="body1">{chatMessage}</Typography>
+                            </ListItem>
                         ))}
-                    </ul>
+                    </List>
                 </div>
             )}
-    
+
         </Paper>
-    </div>    
+
+      </div>
     );
 }
 

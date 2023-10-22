@@ -13,26 +13,27 @@ def handle_connect():
 
 @socketio.on("user_join")
 def handle_user_join(data):
-    print("User join")
-    print(data)
+    # Prints information about user join event
+    print("User Join")
     data = json.loads(data)
-    print(data)
     name = data['username']
     game = data['gameCode']
-    print(name)
-    print(game)
+
+
+    print(f"Username: {name}")
+    print(f"User-Specified Game ID: {game}")
 
     activeGames = ActiveGames.query.all()
     activeGameCodes = []
     for ag in activeGames:
         activeGameCodes.append(ag.gameCode)
     
-    print(activeGameCodes)
+    print("Active Game IDs: " + ', '.join(activeGameCodes))
 
     if not game:
         game = generate_room_code(4, activeGameCodes)
     
-    print(game)
+    print("Current Game ID: " + game)
 
     if game not in activeGameCodes:
         # game does not exist so create it, set status equal to lobby
@@ -46,13 +47,14 @@ def handle_user_join(data):
         playerCount = curr_game.playerCount
         curr_game.playerCount = playerCount + 1
         if curr_game.gameStatus == 2 or curr_game.gameStatus is None:
-            curr_game.gameStatus = 1;
+            curr_game.gameStatus = 1
         
         db.session.commit()
     
     join_room(game)
 
-    print(request.sid)
+    print(f"Session ID: {request.sid}")
+    print()
     # update user information
     user = Users.query.filter_by(username=data['username']).first()
     user.sessionInfo = request.sid

@@ -43,6 +43,7 @@ function App() {
     const { user, setUser } = React.useContext(UserContext);
     const [username, setUsername] = useState('');
     const [message, setMessage] = useState('');
+    const [chatMessages, setChatMessages] = useState([]);
     const [validationError, setValidationError] = useState('');
     const [isSubmitted, setIsSubmitted] = useState(false);
 
@@ -109,31 +110,34 @@ function App() {
         });
     }
 
-//    useEffect(() => {
-//        socketInstance.on("pass_game", function(data) {
-//            const game = document.getElementById("gameCode")
-//            game.textContent = "Game Code: " + data["gameCode"]
-//        })
-//
-//        socketInstance.on("join_room", function(data) {
-//            let ul = document.getElementById("chat-messages");
-//            let li = document.createElement("li");
-//            li.appendChild(document.createTextNode(data["username"] + " has joined the game"));
-//            ul.appendChild(li);
-//            ul.scrolltop = ul.scrollHeight;
-//        })
-//
-//        socketInstance.on("leave_room", function(data) {
-//            let ul = document.getElementById("chat-messages");
-//            let li = document.createElement("li");
-//            li.appendChild(document.createTextNode(data["username"] + " has left the game"));
-//            ul.appendChild(li);
-//            ul.scrolltop = ul.scrollHeight;
-//        })
-//    })
+    useEffect(() => {
+        if (socketInstance) {
+            socketInstance.on("pass_game", function(data) {
+                setChatMessages(prevMessages => [...prevMessages, `Game Code: ${data["gameCode"]}`]);
+            });
+    
+            socketInstance.on("join_room", function(data) {
+                setChatMessages(prevMessages => [...prevMessages, `${data["username"]} has joined the game`]);
+            });
+    
+            socketInstance.on("leave_room", function(data) {
+                setChatMessages(prevMessages => [...prevMessages, `${data["username"]} has left the game`]);
+            });
+        }
+    
+        // Clean up the listener when the component is unmounted or when socketInstance changes.
+        return () => {
+            if (socketInstance) {
+                socketInstance.off("pass_game");
+                socketInstance.off("join_room");
+                socketInstance.off("leave_room");
+            }
+        };
+    }, [socketInstance]);
+    
 
     return (
-      <div>
+        <div>
         <AppBar position="static" className={classes.appBar}>
             <Toolbar>
                 <a href="/" style={{ textDecoration: 'none', color: 'white' }}>
@@ -149,7 +153,7 @@ function App() {
         <Paper className={classes.container}>
             <Typography variant="h4" className={classes.title}>Clue-Less</Typography>
             <Typography variant="h5" className={classes.header}>Login</Typography>
-
+    
             {!isSubmitted ? (
                 <form onSubmit={handleSubmit}>
                     <TextField 
@@ -174,10 +178,23 @@ function App() {
                     </Button>
                 </form>
             ) : null}
-
+    
             {message && <Typography variant="h6" style={{ marginTop: 20 }}>{message}</Typography>}
+    
+            {/* Chat Messages Display */}
+            {isSubmitted && (
+                <div>
+                    <Typography variant="h6" style={{ marginTop: 20, marginBottom: 10 }}>Chat</Typography>
+                    <ul id="chat-messages">
+                        {chatMessages.map((chatMessage, idx) => (
+                            <li key={idx}>{chatMessage}</li>
+                        ))}
+                    </ul>
+                </div>
+            )}
+    
         </Paper>
-      </div>
+    </div>    
     );
 }
 

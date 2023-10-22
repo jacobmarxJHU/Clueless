@@ -1,7 +1,8 @@
 from flask import request, jsonify
 from app import app, db
-from app.models import Users
+from app.models import Users, ActiveGames
 import json
+from .utility import generate_room_code
 
 @app.route('/')
 @app.route('/index')
@@ -34,18 +35,17 @@ def add_user():
 def get(data):
     data = json.loads(data)
     username = data['username']
-    gameCode = data['gameCode']
+    #gameCode = data['gameCode']
     print(username)
-    print(gameCode)
+    #print(gameCode)
     user = Users.query.filter_by(username=username).first()
 
     if not user:
         return jsonify({'error': 'User not found.'}), 404
-
+    
     return jsonify({'id': user.id, 'username': user.username})
 
 
-if __name__ == "__main__":
-    app.run(debug=True)
+
 
 

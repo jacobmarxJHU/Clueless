@@ -14,3 +14,6 @@ db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
 from app import routes, models
+from .events import socketio
+
+socketio.init_app(app)

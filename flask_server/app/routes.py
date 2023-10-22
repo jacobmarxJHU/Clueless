@@ -1,6 +1,7 @@
 from flask import request, jsonify
 from app import app, db
 from app.models import Users
+import json
 
 @app.route('/')
 @app.route('/index')
@@ -26,14 +27,23 @@ def add_user():
 
     return jsonify({'id': user.id, 'username': user.username}), 201
 
-@app.route('/user/<username>', methods=['GET'])
-def get(username):
+
+#@app.route('/user/<username><gameCode>', methods=['GET'])
+#@app.route('/user/<username>', methods=['GET'])
+@app.route('/user/<data>', methods=['GET'])
+def get(data):
+    data = json.loads(data)
+    username = data['username']
+    gameCode = data['gameCode']
+    print(username)
+    print(gameCode)
     user = Users.query.filter_by(username=username).first()
 
     if not user:
         return jsonify({'error': 'User not found.'}), 404
 
     return jsonify({'id': user.id, 'username': user.username})
+
 
 if __name__ == "__main__":
     app.run(debug=True)

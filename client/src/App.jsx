@@ -41,6 +41,7 @@ function App() {
     const classes = useStyles();
     const { user, setUser } = React.useContext(UserContext);
     const [username, setUsername] = useState('');
+    const [gameCode, setGameCode] = useState('');
     const [message, setMessage] = useState('');
     const [validationError, setValidationError] = useState('');
     const [isSubmitted, setIsSubmitted] = useState(false);
@@ -55,11 +56,14 @@ function App() {
         } else {
             setValidationError('');
         }
-
+        let data = JSON.stringify({username:username, gameCode:gameCode})
+        //const userInfoResponse = await fetch(`/user/${username}${gameCode}`);
         // First, check if the user exists using a GET request
-        const userInfoResponse = await fetch(`/user/${username}`);
+        //const userInfoResponse = await fetch(`/user/${username}`);
+        const userInfoResponse = await fetch(`/user/${data}`);
         const userInfoData = await userInfoResponse.json();
 
+        
         if (userInfoData && userInfoData.id) {
             // If user exists
             setMessage(`Welcome back, ${userInfoData.username}! Your ID is ${userInfoData.id}`);
@@ -113,6 +117,14 @@ function App() {
                         fullWidth
                         value={username} 
                         onChange={(e) => setUsername(e.target.value)}
+                    />
+                    <TextField 
+                        className={classes.input}
+                        label="Game Code" 
+                        variant="outlined"
+                        fullWidth
+                        value={gameCode}
+                        onChange={(e) => setGameCode(e.target.value)}
                     />
                     {validationError && <Typography color="error">{validationError}</Typography>}
                     <Button type="submit" variant="contained" color="primary" fullWidth>

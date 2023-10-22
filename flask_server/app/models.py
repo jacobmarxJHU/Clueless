@@ -12,6 +12,7 @@ class Users(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     sessionInfo = db.Column(db.String)
+    gameCode = db.Column(db.String)
     username = db.Column(db.String, unique=True, nullable=False)
 
 # GameStatus Table

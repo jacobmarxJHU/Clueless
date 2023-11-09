@@ -15,6 +15,7 @@ class Users(db.Model):
     gameCode = db.Column(db.String)
     username = db.Column(db.String, unique=True, nullable=False)
 
+
 # GameStatus Table
 class GameStatus(db.Model):
     __tablename__ = 'GameStatus'
@@ -137,4 +138,36 @@ class Guesses(db.Model):
     weaponId = db.Column(db.Integer, db.ForeignKey('cs.Weapons.id'))
     playerId = db.Column(db.Integer, db.ForeignKey('cs.ActivePlayers.id'))
 
+
+# Player Status Table
+class PlayerStatus(db.Model):
+    __tablename__ = 'PlayerStatus'
+    __table_args__ = {'schema': 'cs'}
+
+    id = db.Column(db.Integer, primary_key=True)
+    gameId = db.Column(db.Integer, db.ForeignKey('cs.ActiveGames.id'))
+    playerId = db.Column(db.Integer, db.ForeignKey('cs.ActivePlayers.id'))
+    characterId = db.Column(db.Integer, db.ForeignKey('cs.Characters.id'))
+    locationId = db.Column(db.Integer, db.ForeignKey('cs.Locations.id'))
+
+
+# Card Table
+class Card(db.Model):
+    __tablename__ = 'Card'
+    __table_args__ = {'schema': 'cs'}
+
+    id = db.Column(db.Integer, primary_key=True)
+    weaponId = db.Column(db.Integer, db.ForeignKey('cs.Weapons.id'))
+    roomId = db.Column(db.Integer, db.ForeignKey('cs.Rooms.id'))
+    characterId = db.Column(db.Integer, db.ForeignKey('cs.Characters.id'))
+
+
+# Hand Table
+class Hand(db.Model):
+    __tablename__ = 'Hand'
+    __table_args__ = {'schema': 'cs'}
+
+    id = db.Column(db.Integer, primary_key=True)
+    playerStatusId = db.Column(db.Integer, db.ForeignKey('cs.PlayerStatus.id'))
+    cardId = db.Column(db.Integer, db.ForeignKey('cs.Card.id'))
 

@@ -11,3 +11,5 @@ db_credentials.txt
 /.idea/modules.xml
 /.idea/inspectionProfiles/profiles_settings.xml
 /.idea/vcs.xml
+/.idea/sqldialects.xml
+/.idea/dataSources.xml

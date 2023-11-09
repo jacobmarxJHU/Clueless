@@ -14,6 +14,17 @@ def commit_changes():
         db.session.rollback()
         raise e
 
+def initialize_board(game_id: int):
+    character_assignments = assign_characters(game_id)
+    starting_locations = get_starting_locations(game_id)
+
+    board_setup = {
+        "board_setup": {
+            "CharacterAssignments": character_assignments,
+            "StartingLocations": starting_locations,
+        }
+    }
+
 
 # Performs initial character assignment
 def assign_characters(game_id: int):
@@ -44,3 +55,7 @@ def assign_characters(game_id: int):
 
     # Return json for character assignment
     return {"Characters": char_assignment}
+
+
+def get_starting_locations(game_id):
+    pass

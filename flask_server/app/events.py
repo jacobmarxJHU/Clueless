@@ -2,7 +2,7 @@ from flask import request
 from flask_socketio import emit, join_room
 from .utility import generate_room_code
 from .models import Users, ActiveGames, db
-from .game_logic import assign_characters
+from .game_logic import initialize_board
 import json
 
 from .extensions import socketio
@@ -93,8 +93,8 @@ def start_game(data):
     try:
         # Perform game start functions.
         # TODO: Add all necessary functions
-        character_assignments = assign_characters(game_id)
-        emit('game_started', character_assignments)
+        initialize_board = assign_characters(game_id)
+        emit('game_started', initialize_board)
 
     except ValueError as e:
         emit('error', {'message': str(e)})

@@ -94,7 +94,7 @@ def start_game(data):
         # Perform game start functions.
         # TODO: Add all necessary functions
         initialized_board = initialize_board(game_id)
-        emit('game_started', initialize_board)
+        emit('game_started', initialized_board)
 
     except ValueError as e:
         emit('error', {'message': str(e)})

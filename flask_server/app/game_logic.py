@@ -18,13 +18,17 @@ def commit_changes():
 
 # Master initialize board function to pass initialized game state to front end
 def initialize_board(game_id: int):
+    # TODO: Add all necessary functions to initialize board.
     character_assignments = assign_characters(game_id)
     starting_locations = get_starting_locations(game_id)
+    weapons_locations = get_weapon_locations(game_id)
 
     board_setup = {
         "board_setup": {
             "CharacterAssignments": character_assignments,
             "StartingLocations": starting_locations,
+            "WeaponsLocations": weapons_locations,
+
         }
     }
 
@@ -61,9 +65,42 @@ def assign_characters(game_id: int):
     # Commit assignments
     commit_changes()
 
-    # Return json for character assignment
+    # Return dict for character assignment
     return {"Characters": char_assignment}
 
 
+# Gets and returns starting locations for each player in the game
 def get_starting_locations(game_id):
     pass
+
+
+# Generates weapon starting locations
+def get_weapon_locations(game_id):
+    # Get active game
+    active_game = ActiveGames.query.filter_by(id=game_id).first()
+
+    if not active_game:
+        raise ValueError("Active game not found.")
+
+    # Get all rooms. Assumes that rooms are being pulled from locations table.
+    rooms = Locations.query.filter_by(isRoom=True).all()
+
+    # Get all weapons
+    weapons = Weapons.query.all()
+
+    # Initialize weapon: room dictionary
+    weapon_assignment = {}
+
+    # TODO: Randomize assignment?
+    # Assign each weapon to a room
+    for weapon, room in zip(weapons, rooms):
+
+        # TODO: How are we actually storing weapon location relationships in the database? A GameWeaponsLocations table?
+        weapon.roomID = room.id
+        db.session.add(weapon)
+        weapon_assignment[weapon.name] = room.name
+
+    commit_changes()
+
+    return {"Weapons": weapon_assignment}
+

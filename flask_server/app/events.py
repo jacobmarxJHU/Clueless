@@ -93,7 +93,7 @@ def start_game(data):
     try:
         # Perform game start functions.
         # TODO: Add all necessary functions
-        initialize_board = assign_characters(game_id)
+        initialized_board = initialize_board(game_id)
         emit('game_started', initialize_board)
 
     except ValueError as e:

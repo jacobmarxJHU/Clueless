@@ -4,6 +4,7 @@ from .models import (
     Weapons, Paths, Solutions, Guesses, PlayerStatus, Card, Hand
 )
 import random
+import json
 
 
 # Utility function to commit changes to database as they're made
@@ -14,6 +15,8 @@ def commit_changes():
         db.session.rollback()
         raise e
 
+
+# Master initialize board function to pass initialized game state to front end
 def initialize_board(game_id: int):
     character_assignments = assign_characters(game_id)
     starting_locations = get_starting_locations(game_id)
@@ -24,6 +27,11 @@ def initialize_board(game_id: int):
             "StartingLocations": starting_locations,
         }
     }
+
+    # Crete json object from nested dict to return to front end
+    board_setup_json = json.dumps(board_setup)
+
+    return board_setup_json
 
 
 # Performs initial character assignment

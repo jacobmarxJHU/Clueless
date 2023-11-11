@@ -89,7 +89,7 @@ def handle_disconnect():
 # This will control the socket io end of game start
 @socketio.on('start_game')
 def start_game(data):
-    game_id = data['game_id']
+    game_id = data['gameCode']
     try:
         # Perform game start functions.
         # TODO: Add all necessary functions

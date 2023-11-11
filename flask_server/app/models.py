@@ -4,7 +4,7 @@ in the schema with primary and foreign keys. Please tweak as needed.
 """
 
 from app import db
-from sqlalchemy import Integer, ForeignKey, String, Column, Boolean
+from sqlalchemy import Integer, ForeignKey, String, Column, Boolean, CheckConstraint
 from random import choice
 from string import ascii_uppercase
 
@@ -44,17 +44,40 @@ class Card(db.Model):
 class Game(db.Model):
     # TODO: add max player constarint to playerCount (set to 6)
     # TODO: add min player constraint to playerCount (set to 0)
-    # TODO: add default gameCode (random 6 character string)
-    # TODO: make game status not nullable
-    # TODO: add default value for gameStatus
 
     __tablename__ = 'Games'
     __table_args__ = {'schema': 'cs'}
 
+
+    def createPlayerCode(self):
+        """
+        creates a 6 character (ascii uppercase) string that is not already in the gameCode in the games table.
+        """
+        codeLength = 6
+        
+        #TODO: upgrade this to another algorithm (scaleability)
+        currentGames = Game.query.all()
+        currentCodes = []
+
+        for game in currentGames:
+            currentCodes.append(game.gameCode)
+        
+        print(currentCodes)
+        
+        while True:
+            newCode = ''
+            for _ in range(codeLength):
+                newCode += choice(ascii_uppercase)
+
+            if newCode not in currentCodes:
+                break
+        
+        return newCode
+
     id = Column(Integer, primary_key=True)
-    gameStatus = Column(Integer, ForeignKey('cs.GameStatus.id'))
-    playerCount = Column(Integer, default=0, nullable=False)
-    gameCode = Column(String(6), nullable=False)
+    gameStatus = Column(Integer, ForeignKey('cs.GameStatus.id'), default=2, nullable=True)
+    playerCount = Column(Integer, CheckConstraint('playerCount >= 0 and playerCount <= 6'), default=0, nullable=False, )
+    gameCode = Column(String(6), nullable=False, default=createPlayerCode, unique=True)
 
     def __repr__(self):
         return '<Game status: {}, player count: {}, gameCode: {}>'.format(self.gameStatus, self.playerCount, self.gameCode)
@@ -220,7 +243,7 @@ class User(db.Model):
 
     id = Column(Integer, primary_key=True)
     sessionInfo = Column(String(20))
-    playerCode = Column(String(6), default=createPlayerCode, unique=True)
+    playerCode = Column(String(6), default=createPlayerCode, unique=True) # default creates a unique 6 character string not already in the column
     username = Column(String, nullable=False, unique=True)
     playerStatus = Column(Integer, ForeignKey('cs.PlayerStatus.id'), default=2, nullable=False) # defaults to inactive
 
@@ -247,7 +270,6 @@ class WeaponLocation(db.Model):
     weapondId = Column(Integer, ForeignKey('cs.Weapons.id'), nullable=False)
 
 
-
 # Winners table
 class Winner(db.Model):
     # TODO: make gameId unique
@@ -257,5 +279,5 @@ class Winner(db.Model):
 
     id = Column(Integer, primary_key=True)
     playerId = Column(Integer, ForeignKey('cs.Users.id'), nullable=False)
-    gameId = Column(Integer, ForeignKey('cs.Games.id'), nullable=False)
+    gameId = Column(Integer, ForeignKey('cs.Games.id'), nullable=False, unique=True)
 

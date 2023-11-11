@@ -201,7 +201,7 @@ class User(db.Model):
     sessionInfo = Column(String(20))
     playerCode = Column(String(6))
     username = Column(String, nullable=False)
-    playerStatus = Column(Integer, ForeignKey('cs.PlayerStatus.id'), default=1, nullable=False) # defaults to active
+    playerStatus = Column(Integer, ForeignKey('cs.PlayerStatus.id'), default=2, nullable=False) # defaults to inactive
 
 
 # Weapons Table

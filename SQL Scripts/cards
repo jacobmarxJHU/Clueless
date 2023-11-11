@@ -1,0 +1,13 @@
+-- insert weapons
+INSERT INTO cs."Cards" ("weaponId")
+	SELECT id FROM cs."Weapons";
+
+
+-- insert characters
+INSERT INTO cs."Cards" ("characterId")
+	SELECT id FROM cs."Characters";
+	
+-- insert Locations
+INSERT INTO cs."Cards" ("locationId")
+	SELECT id FROM cs."Locations"
+		WHERE "isRoom" = TRUE;

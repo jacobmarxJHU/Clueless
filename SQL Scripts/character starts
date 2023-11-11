@@ -1,0 +1,24 @@
+
+DO $$
+DECLARE
+	red INTEGER := 1;
+	yellow INTEGER := 2;
+	white INTEGER := 3;
+	green INTEGER := 4;
+	blue INTEGER := 5;
+	purple INTEGER := 6;
+	lred INTEGER := 11;
+	lyellow INTEGER := 14;
+	lwhite INTEGER := 21;
+	lgreen INTEGER := 20;
+	lblue INTEGER := 17;
+	lpurple INTEGER := 12;
+BEGIN
+INSERT INTO cs."StartLocations" ("characterId","locationId") VALUES
+	(red, lred),
+	(yellow, lyellow),
+	(white, lwhite),
+	(green, lgreen),
+	(blue, lblue),
+	(purple, lpurple);
+END $$;

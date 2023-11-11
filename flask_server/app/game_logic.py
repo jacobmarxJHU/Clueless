@@ -1,3 +1,4 @@
+"""
 from app import db
 from .models import (
     Users, GameStatus, ActivePlayers, Games, PlayerOrder, Characters, Locations, PlayerLocations,
@@ -100,4 +101,4 @@ def get_weapon_locations(active_game: Games):
     commit_changes()
 
     return {"Weapons": weapon_assignment}
-
+"""

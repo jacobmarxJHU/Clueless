@@ -1,0 +1,1 @@
+INSERT INTO cs."PlayerStatus" (status) VALUES ('active'), ('inactive');

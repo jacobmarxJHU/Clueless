@@ -18,9 +18,12 @@ class Character(db.Model):
     id = Column(Integer, primary_key=True)
     character = Column(String(20), nullable=False)
 
+    def __repr__(self):
+        return '<Character {}>'.format(self.character)
+
 
 # Cards Table
-class Cards(db.Model):
+class Card(db.Model):
     # TODO: Add method to get the associated character, location, or weapon string
 
     __tablename__ = 'Cards'
@@ -30,6 +33,9 @@ class Cards(db.Model):
     locationId = Column(Integer, ForeignKey('cs.Locations.id'))
     characterId = Column(Integer, ForeignKey('cs.Characters.id'))
     weaponId = Column(Integer, ForeignKey('cs.Weapons.id'))
+
+    def __repr__(self):
+        return '<Card char: {}, weap: {}, loc: {}>'.format(self.characterId, self.weaponId, self.locationId)
 
 
 # Games Table
@@ -48,6 +54,9 @@ class Game(db.Model):
     playerCount = Column(Integer, default=0, nullable=False)
     gameCode = Column(String(6), nullable=False)
 
+    def __repr__(self):
+        return '<Game status: {}, player count: {}, gameCode: {}>'.format(self.gameStatus, self.playerCount, self.gameCode)
+
 
 # GameStatus Table
 class GameStatus(db.Model):
@@ -57,9 +66,12 @@ class GameStatus(db.Model):
     id = Column(Integer, primary_key=True)
     status = Column(String(20), nullable=False)
 
+    def __repr__(self):
+        return '<GameStatus status: {}>'.format(self.status)
+
 
 # Guesses Table
-class Guesse(db.Model):
+class Guess(db.Model):
     __tablename__ = 'Guesses'
     __table_args__ = {'schema': 'cs'}
 
@@ -69,6 +81,9 @@ class Guesse(db.Model):
     locationId = Column(Integer, ForeignKey('cs.Locations.id'), nullable=False)
     weaponId = Column(Integer, ForeignKey('cs.Weapons.id'), nullable=False)
     playerId = Column(Integer, ForeignKey('cs.Users.id'), nullable=False)
+
+    def __repr__(self):
+        return '<Guess {}>'.format(self.id)
 
 
 # Hands Table
@@ -143,8 +158,8 @@ class PlayerStatus(db.Model):
     status = Column(String(20), nullable=False)
 
 
-# StartLocations table - for initial character starting location
-class StartLocation():
+# CharacterStart table - for initial character starting location
+class StartLocation(db.Model):
     # TODO: add a class method to output locations as dict 
     #   (json format) 
     #   (maybe input is character names?)
@@ -152,6 +167,7 @@ class StartLocation():
     __tablename__ = 'StartLocations'
     __table_args__ = {'schema': 'cs'}
 
+    id = Column(Integer, primary_key=True)
     characterId = Column(Integer, ForeignKey('cs.Characters.id'), nullable=False)
     locationId = Column(Integer, ForeignKey('cs.Locations.id'), nullable=False)
 
@@ -208,6 +224,7 @@ class WeaponLocation(db.Model):
     locationId = Column(Integer, ForeignKey('cs.Locations.id'), nullable=False)
     gameId = Column(Integer, ForeignKey('cs.Games.id'), nullable=False)
     weapondId = Column(Integer, ForeignKey('cs.Weapons.id'), nullable=False)
+
 
 
 # Winners table

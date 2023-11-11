@@ -1,0 +1,26 @@
+
+-- Insert rooms and hallways into table
+INSERT INTO cs."Locations" ("locationName", "isRoom") VALUES
+	('Study', TRUE),
+	('Hall', TRUE),
+	('Lounge', TRUE),
+	('Library', TRUE),
+	('Billiard Room', TRUE),
+	('Dining Room', TRUE),
+	('Conservatory', TRUE),
+	('Ballroom', TRUE),
+	('Kitchen', TRUE),
+	('Hallway: Hall - Study', FALSE),
+	('Hallway: Hall - Lounge', FALSE),
+	('Hallway: Library - Study', FALSE),
+	('Hallway: Billiard Room - Hall', FALSE),
+	('Hallway: Dining Room - Lounge', FALSE),
+	('Hallway: Billiard Room - Library', FALSE),
+	('Hallway: Billiard Room - Dining Room', FALSE),
+	('Hallway: Conservatory - Library', FALSE),
+	('Hallway: Ballroom - Billiard Room', FALSE),
+	('Hallway: Dining Room - Kitchen', FALSE),
+	('Hallway: Ballroom - Conservatory', FALSE),
+	('Hallway: Ballroom - Kitchen', FALSE)
+	;
+

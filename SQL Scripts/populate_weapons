@@ -1,0 +1,8 @@
+
+INSERT INTO cs."Weapons" ("weaponName") VALUES
+	('Candlestick'),
+	('Knife'),
+	('Lead Pipe'),
+	('Revolver'),
+	('Rope'),
+	('Wrench');

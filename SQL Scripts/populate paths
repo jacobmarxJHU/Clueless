@@ -1,0 +1,55 @@
+
+-- Note: if the Locations table is updated than the numbers in this file will also require updating
+DO $$
+DECLARE
+	Study INTEGER := 1;
+	Hall INTEGER := 2;
+	Lounge INTEGER := 3;
+	Lib INTEGER := 4;
+	Billiard INTEGER := 5;
+	Dining INTEGER := 6;
+	Conservatory INTEGER := 7;
+	Ballroom INTEGER := 8;
+	Kitchen INTEGER := 9;
+	HallStudy INTEGER := 10;
+	HallLounge INTEGER := 11;
+	LibraryStudy INTEGER := 12;
+	BilliardHall INTEGER := 13;
+	DiningLounge INTEGER := 14;
+	BilliardLibrary INTEGER := 15;
+	BilliardDining INTEGER := 16;
+	ConservatoryLibrary INTEGER := 17;
+	BallroomBilliard INTEGER := 18;
+	DiningKitchen INTEGER := 19;
+	BallroomConservatory INTEGER := 20;
+	BallroomKitchen INTEGER := 21;
+BEGIN
+INSERT INTO cs."Paths" ("locationId1", "locationId2", "isSecret") VALUES
+	(Study, HallStudy, FALSE),
+	(Study, LibraryStudy, FALSE),
+	(Study, Kitchen, TRUE),
+	(Hall, HallStudy, FALSE),
+	(Hall, BilliardHall, FALSE),
+	(Hall, HallLounge, FALSE),
+	(Lounge, HallLounge, FALSE),
+	(Lounge, DiningLounge, FALSE),
+	(Lounge, Conservatory, TRUE),
+	(Lib, LibraryStudy, FALSE),
+	(Lib, BilliardLibrary, FALSE),
+	(Lib, ConservatoryLibrary, FALSE),
+	(Billiard, BilliardHall, FALSE),
+	(Billiard, BilliardLibrary, FALSE),
+	(Billiard, BilliardDining, FALSE),
+	(Billiard, BallroomBilliard, FALSE),
+	(Dining, DiningLounge, FALSE),
+	(Dining, BilliardDining, FALSE),
+	(Dining, DiningKitchen, FALSE),
+	(Conservatory, ConservatoryLibrary, FALSE),
+	(Conservatory, BallroomConservatory, FALSE),
+	(Ballroom, BallroomBilliard, FALSE),
+	(Ballroom, BallroomConservatory, FALSE),
+	(Ballroom, BallroomKitchen, FALSE),
+	(Kitchen, DiningKitchen, FALSE),
+	(Kitchen, BallroomKitchen, FALSE);
+	
+END $$

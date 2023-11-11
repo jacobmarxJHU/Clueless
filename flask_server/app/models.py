@@ -5,6 +5,8 @@ in the schema with primary and foreign keys. Please tweak as needed.
 
 from app import db
 from sqlalchemy import Integer, ForeignKey, String, Column, Boolean
+from random import choice
+from string import ascii_uppercase
 
 # TODO: Format with SQLAlchemy ORM format (decalarative base and mapped)
 # TODO: Add repr methods to each class
@@ -187,21 +189,40 @@ class Solution(db.Model):
 
 # Users table
 class User(db.Model):
-    # TODO: add default function for populated a unique 4 character playerCode
-    # TODO: add default value to playerStatus (set to inactive)
-    # TODO: make playerCode not nullable
-    # TODO: add default to playerStatus
-    # TODO: make player status not nullable
-    # TODO: make playerCode, Username unique
+
+    def createPlayerCode(self):
+        """
+        creates a 6 character (ascii uppercase) string that is not already in the Users playerCode table.
+        """
+        codeLength = 6
+        
+        #TODO: upgrade this to another algorithm (scaleability)
+        currentUsers = User.query.all()
+        currentCodes = []
+
+        for user in currentUsers:
+            currentCodes.append(user.playerCode)
+        
+        print(currentCodes)
+        
+        while True:
+            newCode = ''
+            for _ in range(codeLength):
+                newCode += choice(ascii_uppercase)
+
+            if newCode not in currentCodes:
+                break
+        
+        return newCode
 
     __tablename__ = 'Users'
     __table_args__ = {'schema': 'cs'}
 
     id = Column(Integer, primary_key=True)
     sessionInfo = Column(String(20))
-    playerCode = Column(String(6))
-    username = Column(String, nullable=False)
-    playerStatus = Column(Integer, ForeignKey('cs.PlayerStatus.id'))
+    playerCode = Column(String(6), default=createPlayerCode, unique=True)
+    username = Column(String, nullable=False, unique=True)
+    playerStatus = Column(Integer, ForeignKey('cs.PlayerStatus.id'), default=2, nullable=False) # defaults to inactive
 
 
 # Weapons Table

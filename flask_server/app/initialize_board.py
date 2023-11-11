@@ -1,8 +1,6 @@
-"""
 from app import db
 from .models import (
-    Users, GameStatus, ActivePlayers, Games, PlayerOrder, Characters, Locations, PlayerLocations,
-    Weapons, Paths, Solutions, Guesses, PlayerStatus, Card, Hand, WeaponLocations
+    Game, User, Character, Location, Weapon, WeaponLocation, StartLocation
 )
 import random
 import json
@@ -20,14 +18,14 @@ def commit_changes():
 # Master initialize board function to pass initialized game state to front end
 def initialize_board(game_code: str):
     # Get active game
-    active_game = Games.query.filter_by(game_code=game_code).first()
+    active_game = Game.query.filter_by(game_code=game_code).first()
 
     if not active_game:
         raise ValueError("Active game not found.")
 
     # TODO: Add all necessary functions to initialize board.
     character_assignments = assign_characters(active_game)
-    starting_locations = get_starting_locations(active_game)
+    starting_locations = get_starting_locations()
     weapons_locations = get_weapon_locations(active_game)
 
     board_setup = {
@@ -46,10 +44,10 @@ def initialize_board(game_code: str):
 
 
 # Performs initial character assignment
-def assign_characters(active_game: Games):
+def assign_characters(active_game: Game):
     # Get all active players and characters
-    active_users = Users.query.filter_by(gameCode=active_game.gameCode).all()
-    available_characters = Characters.query.all()
+    active_users = User.query.filter_by(gameCode=active_game.gameCode).all()
+    available_characters = Character.query.all()
 
     # Random character assignment
     random.shuffle(available_characters)
@@ -73,17 +71,34 @@ def assign_characters(active_game: Games):
 
 
 # Gets and returns starting locations for each player in the game
-def get_starting_locations(active_game: Games):
-    pass
+def get_starting_locations():
+    # Get all starting locations from database and return character-location pairs
+    # Join character and location names from respective tables
+    starting_locations = StartLocation.query.join(
+        Character, StartLocation.characterId == Character.id
+    ).join(
+        Location, StartLocation.locationId == Location.id
+    ).add_columns(
+        Character.name, Location.name
+    ).all()
+
+    # Create character-location dictionary
+    start_locations = {}
+    for start_location in starting_locations:
+        character_name = start_location.Character.character
+        location_name = start_location.Location.locationName
+        start_locations[character_name] = location_name
+
+    return {"start_locations": start_locations}
 
 
 # Generates weapon starting locations
-def get_weapon_locations(active_game: Games):
+def get_weapon_locations(active_game: Game):
     # Get all rooms
-    rooms = Locations.query.filter_by(isRoom=True).all()
+    rooms = Location.query.filter_by(isRoom=True).all()
 
     # Get all weapons
-    weapons = Weapons.query.all()
+    weapons = Weapon.query.all()
     random.shuffle(weapons)
 
     # Initialize weapon: room dictionary
@@ -92,7 +107,7 @@ def get_weapon_locations(active_game: Games):
     # Assign each weapon to a room
     for weapon, room in zip(weapons, rooms):
         # Create entry in WeaponLocations table
-        new_weapon_location = WeaponLocations(weaponId=weapon.id, roomId=room.id, gameId=active_game.id)
+        new_weapon_location = WeaponLocation(weaponId=weapon.id, roomId=room.id, gameId=active_game.id)
         db.session.add(new_weapon_location)
 
         # Assign pair to dictionary
@@ -101,4 +116,5 @@ def get_weapon_locations(active_game: Games):
     commit_changes()
 
     return {"Weapons": weapon_assignment}
-"""
+
+# TODO: Hand generation

@@ -2,7 +2,7 @@ from flask import request
 from flask_socketio import emit, join_room
 from .utility import generate_room_code
 from .models import User, Game, db
-#from .game_logic import initialize_board
+from .initialize_board import initialize_board
 import json
 
 from .extensions import socketio
@@ -86,7 +86,7 @@ def handle_disconnect():
     db.session.commit()
     emit("leave_room", {"username": username}, to=gameCode)
 
-"""
+
 # This will control the socket io end of game start
 @socketio.on('start_game')
 def start_game(data):
@@ -99,4 +99,4 @@ def start_game(data):
 
     except ValueError as e:
         emit('error', {'message': str(e)})
-"""
+

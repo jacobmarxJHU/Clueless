@@ -10,6 +10,7 @@ from string import ascii_uppercase
 
 # TODO: Format with SQLAlchemy ORM format (decalarative base and mapped)
 # TODO: Add repr methods to each class
+# TODO: Add Cascade delete to foreign keys where appropriate
 
 
 # Characters Table
@@ -78,6 +79,12 @@ class Game(db.Model):
     gameStatus = Column(Integer, ForeignKey('cs.GameStatus.id'), default=2, nullable=True)
     playerCount = Column(Integer, CheckConstraint('playerCount >= 0 and playerCount <= 6'), default=0, nullable=False, )
     gameCode = Column(String(6), nullable=False, default=createPlayerCode, unique=True)
+
+    def decrementCount(self):
+        self.playerCount -= self.playerCount
+
+    def incrementCount(self):
+        self.playerCount += self.playerCount
 
     def __repr__(self):
         return '<Game status: {}, player count: {}, gameCode: {}>'.format(self.gameStatus, self.playerCount, self.gameCode)
@@ -246,6 +253,10 @@ class User(db.Model):
     playerCode = Column(String(6), default=createPlayerCode, unique=True) # default creates a unique 6 character string not already in the column
     username = Column(String, nullable=False, unique=True)
     playerStatus = Column(Integer, ForeignKey('cs.PlayerStatus.id'), default=2, nullable=False) # defaults to inactive
+    isLeader = Column(Boolean, default=False)
+
+    def __repr__(self):
+        return "<User id: {}, username: {}, playerStatus: {}, playerCode: {}, sessionInfo: {}>".format(self.id, self.playerStatus, self.playerCode, self.sessionInfo)
 
 
 # Weapons Table

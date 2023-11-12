@@ -43,8 +43,6 @@ class Card(db.Model):
 
 # Games Table
 class Game(db.Model):
-    # TODO: add max player constarint to playerCount (set to 6)
-    # TODO: add min player constraint to playerCount (set to 0)
 
     __tablename__ = 'Games'
     __table_args__ = {'schema': 'cs'}
@@ -77,19 +75,11 @@ class Game(db.Model):
 
     id = Column(Integer, primary_key=True)
     gameStatus = Column(Integer, ForeignKey('cs.GameStatus.id'), default=2, nullable=True)
-    playerCount = Column(Integer, CheckConstraint('playerCount >= 0 and playerCount <= 6'), default=0, nullable=False, )
+    playerCount = Column(Integer, CheckConstraint('playerCount >= 0 and playerCount <= 6'), default=0, nullable=False)
     gameCode = Column(String(6), nullable=False, default=createGameCode, unique=True)
 
-    def decrementCount(self):
-        self.playerCount -= self.playerCount
-        db.session.commit()
-
-    def incrementCount(self):
-        self.playerCount += self.playerCount
-        db.session.commit()
-
     def __repr__(self):
-        return '<Game status: {}, player count: {}, gameCode: {}>'.format(self.gameStatus, self.playerCount, self.gameCode)
+        return '<Game id: {}, status: {}, player count: {}, gameCode: {}>'.format(self.id, self.gameStatus, self.playerCount, self.gameCode)
 
 
 # GameStatus Table

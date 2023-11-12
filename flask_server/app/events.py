@@ -35,23 +35,25 @@ def handle_user_join(data):
     if gameIn:
         # game code provided, check if new game or existing
         game = Game.query.filter_by(gameCode=gameIn).first()
+        print("game code provided")
+        print(game)
 
         if game:
-            print(" exists")
+            print("game exists")
             # exists check if in lobby or inactive
             if game.playerCount >= 6:
                 print("trying to join a full lobby")
                 return
-            elif game.status == 2:
+            elif game.gameStatus == 2:
                 # 2 -> inactive
                 print("inactive")
-                game.status = 1
+                game.gameStatus = 1
                 user.isLeader = True
                 user.activeGame = game.id
                 db.session.commit()
                 print(game)
 
-            elif game.status == 1:
+            elif game.gameStatus == 1:
                 # 1 -> lobby
                 print("lobby")
                 db.session.commit()
@@ -62,8 +64,9 @@ def handle_user_join(data):
                 return
         else:
             # create a new game with that code
+            print("Creating game from gamecode")
             game = Game(gameCode=gameIn, gameStatus=1)
-            db.session.add(Game)
+            db.session.add(game)
             db.session.commit()
             user.isLeader = True
             db.session.commit()
@@ -110,7 +113,11 @@ def handle_disconnect():
 
         user.sessionInfo = None
         user.activeGame = None
-        game.decrementCount()
+
+        if game.playerCount == 1:
+            game.playerCount = game.playerCount - 1
+            game.gameStatus = 2
+
         db.session.commit()
 
         print(user)

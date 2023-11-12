@@ -14,7 +14,7 @@ def handle_connect():
 @socketio.on("user_join")
 def handle_user_join(data):
 
-    data = json.loads(data)
+    # data = json.loads(data)
     name = data['username']
     gameIn = data['gameCode']
 

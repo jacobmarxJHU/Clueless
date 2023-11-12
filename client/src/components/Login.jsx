@@ -55,6 +55,8 @@ const Login = () => {
             upgrade: false,
         });
 
+        setSocketInstance(socket);
+
         // Event listeners for socket connection
         socket.on("connect", () => {
             console.log("Connected to socket.io server");
@@ -80,54 +82,52 @@ const Login = () => {
             return;
         } else {
             setValidationError('');
-        }
-        let data = JSON.stringify({username:username, gameCode:gameCode})
-        // First, check if the user exists using a GET request
-        const userInfoResponse = await fetch(`/user/${data}`);
-        const userInfoData = await userInfoResponse.json();
-        
-        if (userInfoData && userInfoData.id) {
-            // If user exists
-            navigate(`/game/${gameCode}`, { state: { username: username } });
-            console.log("Game Code:", gameCode);
-            console.log("Username:", username);
-        } else {
-            // If user doesn't exist, register them using a POST request
-            const registerResponse = await fetch('/user', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ username })
-            });
+            setIsSubmitted(true);
 
-            const registerData = await registerResponse.json();
-            if (registerData && registerData.id) {
-                navigate(`/game/${registerData.gameCode}`, { state: { username: username } });
-            } else {
-                setMessage('An error occurred. Please try again.');
+            // First, check if the user exists using a GET request
+            try {
+                let data = JSON.stringify({username:username, gameCode:gameCode});
+                let dataDict = {username, gameCode};
+                const userInfoResponse = await fetch(`/user/${data}`);
+                const userInfoData = await userInfoResponse.json();
+                
+                if (userInfoData && userInfoData.id) {
+                    // If user exists
+                    socketInstance.emit("user_join", dataDict);
+                } else {
+                    // If user doesn't exist, register them using a POST request
+                    const registerResponse = await fetch('/user', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ username })
+                    });
+                    const registerData = await registerResponse.json();
+                    if (registerData && registerData.id) {
+                        socketInstance.emit("user_join", dataDict);
+                    } else {
+                        setMessage('An error occurred. Please try again.');
+                    }
+                }
+            } catch (error) {
+                console.error('Failed to fetch user info:', error);
+                setValidationError('An error occurred. Please try again.');
             }
         }
-
-        setIsSubmitted(true);
-        
-        const socket = io("localhost:5000/", {
-        transports: ["websocket"],
-        cors: {
-            origin: "http://localhost:3000/",
-        },
-        });
-    
-        setSocketInstance(socket);
-
-
-        let updated_data = JSON.stringify({username:username, gameCode:gameCode})
-
-        socket.on("connect", () => {
-            socket.emit("user_join", updated_data)
-            console.log(updated_data);
-        });
     };
+
+    // Listen for the "user_join" event emitted by the server with the gameCode and username
+    useEffect(() => {
+        if (socketInstance) {
+            socketInstance.on("user_join", (data) => {
+                console.log(data);
+                navigate(`/game/${data.gameCode}`, {
+                    state: { username: data.username } 
+                  });
+            });
+        }
+    }, [socketInstance, navigate]);
 
     return (
         <Paper className={classes.container}>

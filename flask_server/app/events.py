@@ -94,8 +94,8 @@ def handle_user_join(data):
 
     join_room(gameIn)
 
-    emit("pass_game", {"gameCode": gameIn})
-    emit("join_room", {"username": name}, to=gameIn)
+    emit("pass_game", {"gameCode": gameIn, "username": name})
+    # emit("join_room", {"username": name}, to=gameIn)
 
 
 @socketio.on("disconnect")

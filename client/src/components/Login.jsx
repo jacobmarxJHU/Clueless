@@ -3,6 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { Button, TextField, Typography, Paper, makeStyles } from '@material-ui/core';
 import { io } from "socket.io-client"
 
+// Initialize socket
+const socket = io(); 
+
 const useStyles = makeStyles((theme) => ({
     container: {
         display: 'flex',
@@ -120,7 +123,7 @@ const Login = () => {
     // Listen for the "user_join" event emitted by the server with the gameCode and username
     useEffect(() => {
         if (socketInstance) {
-            socketInstance.on("user_join", (data) => {
+            socketInstance.on("pass_game", (data) => {
                 console.log(data);
                 navigate(`/game/${data.gameCode}`, {
                     state: { username: data.username } 

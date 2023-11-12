@@ -50,7 +50,7 @@ class Game(db.Model):
     __table_args__ = {'schema': 'cs'}
 
 
-    def createPlayerCode(self):
+    def createGameCode(self):
         """
         creates a 6 character (ascii uppercase) string that is not already in the gameCode in the games table.
         """
@@ -78,13 +78,15 @@ class Game(db.Model):
     id = Column(Integer, primary_key=True)
     gameStatus = Column(Integer, ForeignKey('cs.GameStatus.id'), default=2, nullable=True)
     playerCount = Column(Integer, CheckConstraint('playerCount >= 0 and playerCount <= 6'), default=0, nullable=False, )
-    gameCode = Column(String(6), nullable=False, default=createPlayerCode, unique=True)
+    gameCode = Column(String(6), nullable=False, default=createGameCode, unique=True)
 
     def decrementCount(self):
         self.playerCount -= self.playerCount
+        db.session.commit()
 
     def incrementCount(self):
         self.playerCount += self.playerCount
+        db.session.commit()
 
     def __repr__(self):
         return '<Game status: {}, player count: {}, gameCode: {}>'.format(self.gameStatus, self.playerCount, self.gameCode)
@@ -250,13 +252,14 @@ class User(db.Model):
 
     id = Column(Integer, primary_key=True)
     sessionInfo = Column(String(20))
-    playerCode = Column(String(6), default=createPlayerCode, unique=True) # default creates a unique 6 character string not already in the column
+    playerCode = Column(String(6), default=createPlayerCode, unique=True, nullable=False) # default creates a unique 6 character string not already in the column
     username = Column(String, nullable=False, unique=True)
     playerStatus = Column(Integer, ForeignKey('cs.PlayerStatus.id'), default=2, nullable=False) # defaults to inactive
-    isLeader = Column(Boolean, default=False)
+    isLeader = Column(Boolean, default=False, nullable=False)
+    activeGame = Column(Integer, ForeignKey('cs.Games.id'))
 
     def __repr__(self):
-        return "<User id: {}, username: {}, playerStatus: {}, playerCode: {}, sessionInfo: {}>".format(self.id, self.playerStatus, self.playerCode, self.sessionInfo)
+        return f"<User id: {self.id}, username: {self.username}, playerStatus: {self.playerStatus}, playerCode: {self.playerCode}, sessionInfo: {self.sessionInfo}, activeGame: {self.activeGame}>"
 
 
 # Weapons Table

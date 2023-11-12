@@ -1,7 +1,6 @@
 from flask import request
 from flask_socketio import emit, join_room
-from .utility import generate_room_code
-from .models import User, Game, db
+from .models import User, Game, db, PlayerInfo
 from .initialize_board import initialize_board
 import json
 
@@ -14,77 +13,107 @@ def handle_connect():
 
 @socketio.on("user_join")
 def handle_user_join(data):
-    # Prints information about user join event
-    print("User Join")
+
     data = json.loads(data)
     name = data['username']
-    game = data['gameCode']
+    gameIn = data['gameCode']
 
+    print("User joined")
+    print(f"attempted join with username: {name}, gameCode: {gameIn}")
 
-    print(f"Username: {name}")
-    print(f"User-Specified Game ID: {game}")
-
-    activeGames = Game.query.all()
-    activeGameCodes = []
-    for ag in activeGames:
-        activeGameCodes.append(ag.gameCode)
-    
-    print("Active Game IDs: " + ', '.join(activeGameCodes))
-
-    if not game:
-        game = generate_room_code(4, activeGameCodes)
-    
-    print("Current Game ID: " + game)
-
-    if game not in activeGameCodes:
-        # game does not exist so create it, set status equal to lobby
-        new_game = Game(gameCode=game, gameStatus=1, playerCount=1)
-        db.session.add(new_game)
+    try:
+        print('attempt now')
+        user = User.query.filter_by(username=name).first()
+        user.sessionInfo = request.sid
+        user.playerStatus = 1
         db.session.commit()
+        print(user)
+    except:
+        raise("Error locating the user")
+
+
+    if gameIn:
+        # game code provided, check if new game or existing
+        game = Game.query.filter_by(gameCode=gameIn).first()
+
+        if game:
+            print(" exists")
+            # exists check if in lobby or inactive
+            if game.playerCount >= 6:
+                print("trying to join a full lobby")
+                return
+            elif game.status == 2:
+                # 2 -> inactive
+                print("inactive")
+                game.status = 1
+                user.isLeader = True
+                user.activeGame = game.id
+                db.session.commit()
+                print(game)
+
+            elif game.status == 1:
+                # 1 -> lobby
+                print("lobby")
+                db.session.commit()
+                print(game)
+
+            else:
+                # how to raise error?
+                print("trying to join in progress game")
+        else:
+            # create a new game with that code
+            game = Game(gameCode=gameIn, gameStatus=1)
+            db.session.add(Game)
+            db.session.commit()
+            user.isLeader = True
+            db.session.commit()
 
     else:
-        # set game status to active
-        curr_game = Game.query.filter_by(gameCode=game).first()
-        playerCount = curr_game.playerCount
-        curr_game.playerCount = playerCount + 1
-        if curr_game.gameStatus == 2 or curr_game.gameStatus is None:
-            curr_game.gameStatus = 1
-        
-        db.session.commit()
-    
-    join_room(game)
+        print("no game code provided: create a new one")
+        try:
+            game = Game(gameStatus=1)
+            db.session.add(game)
+            db.session.commit()
+            user.isLeader = True
+            db.session.commit()
+            print(game)
+            print(user)
+        except:
+            print("error creating a new game from scratch")
 
-    print(f"Session ID: {request.sid}")
-    print()
-    # update user information
-    user = User.query.filter_by(username=data['username']).first()
-    user.sessionInfo = request.sid
-    user.gameCode = game
-    username = user.username
+    user.activeGame = game.id
+    game.playerCount = game.playerCount + 1
     db.session.commit()
+    print('before join game')
 
-    emit("pass_game", {"gameCode": game})
-    emit("join_room", {"username": username}, to=game)
+    print(game)
+    print(user)
+
+    join_room(gameIn)
+
+    emit("pass_game", {"gameCode": gameIn})
+    emit("join_room", {"username": name}, to=gameIn)
 
 
 @socketio.on("disconnect")
 def handle_disconnect():
     print("Client disconnected")
+    print(request.sid)
     user = User.query.filter_by(sessionInfo=request.sid).first()
-    username = user.username
-    gameCode = user.gameCode
-    curr_game = Game.query.filter_by(gameCode=gameCode).first()
+    game = Game.query.filter_by(id=user.activeGame).first()
 
-    if curr_game.playerCount <= 1:
-        curr_game.playerCount = 0
-        curr_game.gameStatus = 2
-    else:
-        curr_game.playerCount = curr_game.playerCount - 1
+    print(user)
+    print(game)
 
     user.sessionInfo = None
-    user.gameCode = None
+    user.activeGame = None
+    game.decrementCount()
     db.session.commit()
-    emit("leave_room", {"username": username}, to=gameCode)
+
+    print(user)
+    print(game)
+
+    emit("leave_room", {"username": user.username}, to=game.gameCode)
 
 
 # This will control the socket io end of game start

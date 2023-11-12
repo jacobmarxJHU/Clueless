@@ -61,17 +61,31 @@ const useStyles = makeStyles((theme) => ({
 const GameLayout = ({ username, gameCode, chatMessages, userHand }) => {
   const classes = useStyles();
 
-  // Dummy data for rooms
+  // Rooms and paths
   const rooms = [
+    // Rooms
     { room: 'Study', character: 'Prof. Plum', weapon: 'Candlestick' },
     { room: 'Hall', character: 'Mr. Green', weapon: 'Revolver' },
     { room: 'Lounge', character: 'Mrs. Peacock', weapon: 'Rope' },
-    { room: 'Dining Room', character: 'Miss Scarlet', weapon: 'Lead Pipe' },
-    { room: 'Kitchen', character: 'Colonel Mustard', weapon: 'Knife' },
-    { room: 'Ballroom', character: 'Mrs. White', weapon: 'Wrench' },
-    { room: 'Conservatory', character: '', weapon: '' },
-    { room: 'Billiard Room', character: '', weapon: '' },
     { room: 'Library', character: '', weapon: '' },
+    { room: 'Billiard', character: '', weapon: '' },
+    { room: 'Dining', character: 'Miss Scarlet', weapon: 'Lead Pipe' },
+    { room: 'Conservatory', character: '', weapon: '' },
+    { room: 'Ballroom', character: 'Mrs. White', weapon: 'Wrench' },
+    { room: 'Kitchen', character: 'Colonel Mustard', weapon: 'Knife' },
+    // Paths
+    { room: 'HallStudy', character: '', weapon: '' },
+    { room: 'HallLounge', character: '', weapon: '' },
+    { room: 'LibraryStudy', character: '', weapon: '' },
+    { room: 'BilliardHall', character: '', weapon: '' },
+    { room: 'DiningLounge', character: '', weapon: '' },
+    { room: 'BilliardLibrary', character: '', weapon: '' },
+    { room: 'BilliardDining', character: '', weapon: '' },
+    { room: 'ConservatoryLibrary', character: '', weapon: '' },
+    { room: 'BallroomBilliard', character: '', weapon: '' },
+    { room: 'DiningKitchen', character: '', weapon: '' },
+    { room: 'BallroomConservatory', character: '', weapon: '' },
+    { room: 'BallroomKitchen', character: '', weapon: '' },
   ];
 
   // Example updates
@@ -86,7 +100,7 @@ const GameLayout = ({ username, gameCode, chatMessages, userHand }) => {
 
   return (
     <Container className={classes.container}>
-      <Navbar username="{username}" /> 
+      <Navbar username={username} /> 
       <GameStatusBanner status="It's your turn!" className={classes.statusBanner} />
       {/* Grid for the game board and character locations */}
       <Grid container spacing={2} className={classes.gameSection}>

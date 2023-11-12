@@ -13,7 +13,10 @@ import {
 
 const useStyles = makeStyles((theme) => ({
   tableContainer: {
+    maxHeight: 300, // Set a fixed maximum height for scrollable content
     maxWidth: 550, // Adjust the width as necessary
+    overflowY: 'auto', // Add vertical scroll
+    minHeight: 380,
   },
   table: {
     minWidth: 300, // Adjust the width as necessary
@@ -40,10 +43,10 @@ const CharacterAndWeaponLocation = ({ rooms }) => {
         Board State
       </Typography>
       <TableContainer component={Paper} className={classes.tableContainer}>
-        <Table className={classes.table} size="small" aria-label="character and weapon locations">
+        <Table stickyHeader className={classes.table} size="small" aria-label="character and weapon locations">
           <TableHead>
             <TableRow>
-            <TableCell className={classes.headerCell}>Room</TableCell>
+              <TableCell className={classes.headerCell}>Room</TableCell>
               <TableCell className={classes.headerCell}>Character</TableCell>
               <TableCell className={classes.headerCell}>Weapon</TableCell>
             </TableRow>
@@ -58,7 +61,7 @@ const CharacterAndWeaponLocation = ({ rooms }) => {
             ))}
           </TableBody>
         </Table>
-    </TableContainer>
+      </TableContainer>
     </div>
   );
 };

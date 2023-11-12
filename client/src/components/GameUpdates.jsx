@@ -10,6 +10,7 @@ const useStyles = makeStyles((theme) => ({
     padding: theme.spacing(2),
     backgroundColor: '#F3F6F9',
     border: '1px solid black',
+    minHeight: 395,
   },
   updateMessage: {
     listStyleType: 'none', // Removes list style

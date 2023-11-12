@@ -18,6 +18,8 @@ const GamePage = () => {
   const { gameCode } = useParams(); // This will get the gameCode from the URL
   const location = useLocation(); // This will allow you to access the routing state
 
+  console.log("Game Code:", gameCode); // Should log the game code from the URL
+
   // Extract the username from the location state (fallback to an empty string if not provided)
   const username = location.state?.username || '';
 

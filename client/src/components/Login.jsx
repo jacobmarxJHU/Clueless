@@ -88,7 +88,9 @@ const Login = () => {
         
         if (userInfoData && userInfoData.id) {
             // If user exists
-            navigate(`/game/${userInfoData.gameCode}`, { state: { username: username } });
+            navigate(`/game/${gameCode}`, { state: { username: username } });
+            console.log("Game Code:", gameCode);
+            console.log("Username:", username);
         } else {
             // If user doesn't exist, register them using a POST request
             const registerResponse = await fetch('/user', {

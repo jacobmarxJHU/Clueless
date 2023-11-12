@@ -61,8 +61,6 @@ class Game(db.Model):
         for game in currentGames:
             currentCodes.append(game.gameCode)
         
-        print(currentCodes)
-        
         while True:
             newCode = ''
             for _ in range(codeLength):

@@ -4,16 +4,7 @@ from .models import (
 )
 import random
 import json
-
-
-# Utility function to commit changes to database as they're made
-def commit_changes():
-    try:
-        db.session.commit()
-    except Exception as e:
-        db.session.rollback()
-        raise e
-
+from .utility import commit_changes
 
 # Master initialize board function to pass initialized game state to front end
 def initialize_board(game_code: str):
@@ -214,6 +205,7 @@ def get_card_name(card):
     if card.locationId:
         location = Location.query.get(card.locationId)
         return location.name if location else None
+    
 
     elif card.characterId:
         character = Character.query.get(card.characterId)

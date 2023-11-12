@@ -97,7 +97,7 @@ def handle_user_join(data):
 
     join_room(game.gameCode)
 
-    emit("pass_game", {"gameCode": game.gameCode})
+    emit("pass_game", {"gameCode": game.gameCode, "username": name, "isLeader": user.isLeader})
 
     message = f"User {name} has joined the game"
 

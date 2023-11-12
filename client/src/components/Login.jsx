@@ -123,10 +123,10 @@ const Login = () => {
     // Listen for the "user_join" event emitted by the server with the gameCode and username
     useEffect(() => {
         if (socketInstance) {
-            socketInstance.on("pass_game", (data) => {
-                console.log(data);
-                navigate(`/game/${data.gameCode}`, {
-                    state: { username: data.username } 
+            socketInstance.on("pass_game", (updatedData) => {
+                console.log(updatedData);
+                navigate(`/game/${updatedData.gameCode}`, {
+                    state: { username: updatedData.username } 
                   });
             });
         }

@@ -95,18 +95,13 @@ def handle_user_join(data):
     print(game)
     print(user)
 
-    join_room(gameIn)
+    join_room(game.gameCode)
 
-<<<<<<< HEAD
-    emit("pass_game", {"gameCode": gameIn})
+    emit("pass_game", {"gameCode": game.gameCode})
 
     message = f"User {name} has joined the game"
 
-    emit("message_chat", {"message": message}, to=gameIn)
-=======
-    emit("pass_game", {"gameCode": gameIn, "username": name})
-    # emit("join_room", {"username": name}, to=gameIn)
->>>>>>> 52b2b02034b30608c44a18ecccc4071ad84c5b31
+    emit("message_chat", {"message": message}, to=game.gameCode)
 
 
 @socketio.on("disconnect")

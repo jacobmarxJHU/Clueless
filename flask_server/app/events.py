@@ -3,6 +3,7 @@ from flask_socketio import emit, join_room
 from .models import User, Game, db, PlayerInfo
 from .initialize_board import initialize_board
 import json
+from .utility import commit_changes
 
 from .extensions import socketio
 
@@ -26,7 +27,7 @@ def handle_user_join(data):
         user = User.query.filter_by(username=name).first()
         user.sessionInfo = request.sid
         user.playerStatus = 1
-        db.session.commit()
+        commit_changes()
         print(user)
     except:
         raise("Error locating the user")
@@ -50,13 +51,13 @@ def handle_user_join(data):
                 game.gameStatus = 1
                 user.isLeader = True
                 user.activeGame = game.id
-                db.session.commit()
+                commit_changes()
                 print(game)
 
             elif game.gameStatus == 1:
                 # 1 -> lobby
                 print("lobby")
-                db.session.commit()
+                commit_changes()
                 print(game)
 
             else:
@@ -67,9 +68,11 @@ def handle_user_join(data):
             print("Creating game from gamecode")
             game = Game(gameCode=gameIn, gameStatus=1)
             db.session.add(game)
-            db.session.commit()
+            commit_changes()
+
             user.isLeader = True
-            db.session.commit()
+            commit_changes()
+
 
     else:
         print("no game code provided: create a new one")
@@ -78,7 +81,7 @@ def handle_user_join(data):
             db.session.add(game)
             db.session.commit()
             user.isLeader = True
-            db.session.commit()
+            commit_changes()
             print(game)
             print(user)
         except:
@@ -86,7 +89,7 @@ def handle_user_join(data):
 
     user.activeGame = game.id
     game.playerCount = game.playerCount + 1
-    db.session.commit()
+    commit_changes()
     print('before join game')
 
     print(game)
@@ -159,7 +162,7 @@ def action_move(data):
 
 @socketio.on('action_suggestion')
 def action_suggestion(data):
-    
+
     pass
 
 

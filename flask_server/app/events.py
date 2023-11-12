@@ -95,7 +95,10 @@ def handle_user_join(data):
     join_room(gameIn)
 
     emit("pass_game", {"gameCode": gameIn})
-    emit("join_room", {"username": name}, to=gameIn)
+
+    message = f"User {name} has joined the game"
+
+    emit("message_chat", {"message": message}, to=gameIn)
 
 
 @socketio.on("disconnect")
@@ -123,12 +126,16 @@ def handle_disconnect():
         print(user)
         print(game)
 
-        emit("leave_room", {"username": user.username}, to=game.gameCode)
+        message = f"User {user.username} has joined the game"
+
+        emit("message_chat", {"message": message}, to=game.gameCode)
     else:
         print("Trying to diconnect from no game")
 
 
 # This will control the socket io end of game start
+# sends hand
+# sends locations (generates playerInfo records, generates weapon locations)
 @socketio.on('start_game')
 def start_game(data):
     game_id = data['gameCode']
@@ -141,3 +148,28 @@ def start_game(data):
     except ValueError as e:
         emit('error', {'message': str(e)})
 
+
+# 
+@socketio.on('action_move')
+def action_move(data):
+    # emits pop locations
+
+    pass
+
+
+@socketio.on('action_suggestion')
+def action_suggestion(data):
+    
+    pass
+
+
+@socketio.on('action_turnEnd')
+def action_turnEnd(data):
+
+    pass
+
+
+@socketio.on('action_accuse')
+def action_accuse(data):
+
+    pass

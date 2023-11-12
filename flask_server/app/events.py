@@ -58,8 +58,8 @@ def handle_user_join(data):
                 print(game)
 
             else:
-                # how to raise error?
                 print("trying to join in progress game")
+                return
         else:
             # create a new game with that code
             game = Game(gameCode=gameIn, gameStatus=1)
@@ -99,21 +99,26 @@ def handle_user_join(data):
 def handle_disconnect():
     print("Client disconnected")
     print(request.sid)
+
     user = User.query.filter_by(sessionInfo=request.sid).first()
-    game = Game.query.filter_by(id=user.activeGame).first()
 
-    print(user)
-    print(game)
+    if user and user.activeGame:
 
-    user.sessionInfo = None
-    user.activeGame = None
-    game.decrementCount()
-    db.session.commit()
+        game = Game.query.filter_by(id=user.activeGame).first()
+        print(user)
+        print(game)
 
-    print(user)
-    print(game)
+        user.sessionInfo = None
+        user.activeGame = None
+        game.decrementCount()
+        db.session.commit()
 
-    emit("leave_room", {"username": user.username}, to=game.gameCode)
+        print(user)
+        print(game)
+
+        emit("leave_room", {"username": user.username}, to=game.gameCode)
+    else:
+        print("Trying to diconnect from no game")
 
 
 # This will control the socket io end of game start

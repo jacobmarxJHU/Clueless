@@ -142,6 +142,9 @@ class Location(db.Model):
     locationName = Column(String(55), nullable=False)
     isRoom = Column(Boolean, default=False, nullable=False)
 
+    def __repr__(self) -> str:
+        return f"<Location {self.locationName}, room: {self.isRoom}>"
+
 
 # Paths Table
 class Path(db.Model):
@@ -153,6 +156,13 @@ class Path(db.Model):
     locationId2 = Column(Integer, ForeignKey('cs.Locations.id'), nullable=False)
     isSecret = Column(Boolean, default=False)
 
+    def __repr__(self) -> str:
+
+        loc1 = Location.query.filter_by(self.locationId1).first()
+        loc2 = Location.query.filter_by(self.locationId2).first()
+
+        return f"<Path loc1: {loc1.locationName}, loc2: {loc2.locationName}, secret={self.isSecret}>"
+    
 
 # PlayerInfo
 class PlayerInfo(db.Model):
@@ -327,6 +337,7 @@ class User(db.Model):
         return f"<User id: {self.id}, username: {self.username}, playerStatus: {self.playerStatus}, playerCode: {self.playerCode}, sessionInfo: {self.sessionInfo}, activeGame: {self.activeGame}>"
 
 
+
 # Weapons Table
 class Weapon(db.Model):
     __tablename__ = 'Weapons'
@@ -334,6 +345,9 @@ class Weapon(db.Model):
 
     id = Column(Integer, primary_key=True)
     weaponName = Column(String(20))
+
+    def __repr__(self) -> str:
+        return f"<Weapon {self.weaponName}>" 
 
 
 class WeaponLocation(db.Model):
@@ -348,6 +362,46 @@ class WeaponLocation(db.Model):
     gameId = Column(Integer, ForeignKey('cs.Games.id'), nullable=False)
     weapondId = Column(Integer, ForeignKey('cs.Weapons.id'), nullable=False)
 
+    @classmethod
+    def initializeGame(cls, gamecode):
+        game = Game.query.filter_by(gameCode=gamecode).first()
+
+        # randomly place weapons in rooms
+        weapons = Weapon.query.all()
+        locs = Location.query.filter_by(isRoom=True).all()
+
+        lSet = set()
+        for l in locs:
+            lSet.add(l.id)
+
+        for w in weapons:
+            locId = sample(lSet, 1)[0]
+            lSet.remove(locId)
+            wl = WeaponLocation(locationId=locId, weapondId=w.id, gameId=game.id)
+            db.session.add(wl)
+            db.session.commit()
+        
+        return
+    
+    @classmethod
+    def getWeaponState(cls, gamecode: str):
+        game = Game.query.filter_by(gameCode=gamecode).first()
+        wls = WeaponLocation.query.filter_by(gameId=game.id).join(Weapon).add_column(Weapon.weaponName).join(Location).add_column(Location.locationName).all()
+
+        weaponState = {}
+        for wl in wls:
+            weaponState[wl[1]] =  wl[2]
+        
+        return weaponState
+
+    def __repr__(self) -> str:
+        
+        game = Game.query.filter_by(id=self.gameId).first()
+        wep = Weapon.query.filter_by(id=self.weapondId).first()
+        loc = Location.query.filter_by(id=self.locationId).first()
+
+        return f"<WeaponLocation game: {game.gameCode}, location: {loc.locationName}, weapon: {wep.weaponName}"
+    
 
 # Winners table
 class Winner(db.Model):

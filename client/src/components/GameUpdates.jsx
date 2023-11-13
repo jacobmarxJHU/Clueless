@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Paper, List, ListItem, ListItemIcon, Typography, makeStyles } from '@material-ui/core';
 import ChatIcon from '@material-ui/icons/Chat';
 
@@ -26,19 +26,34 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const GameUpdates = ({ updates }) => {
+const GameUpdates = ({ socket }) => {
   const classes = useStyles();
+  const [messages, setMessages] = useState([]);
+
+  useEffect(() => {
+    // Setup the `message_chat` event listener
+    const handleNewMessage = (data) => {
+      setMessages((prevMessages) => [...prevMessages, data.message]);
+    };
+
+    socket.on('message_chat', handleNewMessage);
+
+    // Clean up the event listener
+    return () => {
+      socket.off('message_chat', handleNewMessage);
+    };
+  }, [socket]);
 
   return (
     <Paper className={classes.updatesBox}>
       <Typography variant="h6">Status Updates</Typography>
       <List>
-        {updates.map((update, index) => (
+        {messages.map((message, index) => (
           <ListItem key={index} className={classes.updateMessage}>
             <ListItemIcon className={classes.icon}>
               <ChatIcon color="primary" />
             </ListItemIcon>
-            <Typography variant="body1">{update}</Typography>
+            <Typography variant="body1">{message}</Typography>
           </ListItem>
         ))}
       </List>

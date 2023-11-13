@@ -89,17 +89,6 @@ const GameLayout = ({ username, gameCode, isLeader, chatMessages, userHand }) =>
     };
   }, []);
 
-
-  // Example updates
-  const updates = [
-    'Prof. Plum moved to the Study.',
-    'Mr. Green suggested it was Mrs. Peacock in the Lounge with the Rope.',
-    'Miss Scarlet disproved the suggestion.',
-    'It is now Colonel Mustard’s turn.',
-    'Colonel Mustard made an accusation!',
-    'Game over: Colonel Mustard won the game!',
-  ];
-
   return (
     <Container className={classes.container}>
       <Navbar username={username} /> 
@@ -113,7 +102,7 @@ const GameLayout = ({ username, gameCode, isLeader, chatMessages, userHand }) =>
           <GameBoard image="/path/to/gameBoard.png" />
         </Grid>
         <Grid item xs={12} sm={4} className={classes.equalColumn}>
-          <GameUpdates updates={chatMessages} />
+          <GameUpdates socket={socketInstance} />
         </Grid>
       </Grid>
       <Divider className={classes.divider} />

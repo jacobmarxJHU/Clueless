@@ -90,33 +90,6 @@ const GameLayout = ({ username, gameCode, isLeader, chatMessages, userHand }) =>
   }, []);
 
 
-  // Rooms and paths
-  const rooms = [
-    // Rooms
-    { room: 'Study', character: 'Prof. Plum', weapon: 'Candlestick' },
-    { room: 'Hall', character: 'Mr. Green', weapon: 'Revolver' },
-    { room: 'Lounge', character: 'Mrs. Peacock', weapon: 'Rope' },
-    { room: 'Library', character: '', weapon: '' },
-    { room: 'Billiard', character: '', weapon: '' },
-    { room: 'Dining', character: 'Miss Scarlet', weapon: 'Lead Pipe' },
-    { room: 'Conservatory', character: '', weapon: '' },
-    { room: 'Ballroom', character: 'Mrs. White', weapon: 'Wrench' },
-    { room: 'Kitchen', character: 'Colonel Mustard', weapon: 'Knife' },
-    // Paths
-    { room: 'HallStudy', character: '', weapon: '' },
-    { room: 'HallLounge', character: '', weapon: '' },
-    { room: 'LibraryStudy', character: '', weapon: '' },
-    { room: 'BilliardHall', character: '', weapon: '' },
-    { room: 'DiningLounge', character: '', weapon: '' },
-    { room: 'BilliardLibrary', character: '', weapon: '' },
-    { room: 'BilliardDining', character: '', weapon: '' },
-    { room: 'ConservatoryLibrary', character: '', weapon: '' },
-    { room: 'BallroomBilliard', character: '', weapon: '' },
-    { room: 'DiningKitchen', character: '', weapon: '' },
-    { room: 'BallroomConservatory', character: '', weapon: '' },
-    { room: 'BallroomKitchen', character: '', weapon: '' },
-  ];
-
   // Example updates
   const updates = [
     'Prof. Plum moved to the Study.',
@@ -134,7 +107,7 @@ const GameLayout = ({ username, gameCode, isLeader, chatMessages, userHand }) =>
       {/* Grid for the game board and character locations */}
       <Grid container spacing={2} className={classes.gameSection}>
         <Grid item xs={12} sm={4} className={classes.equalColumn}>
-          <CharacterAndWeaponLocation rooms={rooms} />
+          <CharacterAndWeaponLocation socket={socketInstance} />
         </Grid>
         <Grid item xs={12} sm={4} className={classes.gameBoardGridItem}>
           <GameBoard image="/path/to/gameBoard.png" />

@@ -5,7 +5,7 @@ in the schema with primary and foreign keys. Please tweak as needed.
 
 from app import db
 from sqlalchemy import Integer, ForeignKey, String, Column, Boolean, CheckConstraint
-from random import choice
+from random import choice, sample
 from string import ascii_uppercase
 
 # TODO: Format with SQLAlchemy ORM format (decalarative base and mapped)
@@ -167,6 +167,46 @@ class PlayerInfo(db.Model):
     isEliminated = Column(Boolean, default=False, nullable=False)
     playerId = Column(Integer, ForeignKey('cs.Users.id'), nullable=False)
 
+    @classmethod
+    def initializeGame(cls, gamecode:str):
+        game = Game.query.filter_by(gameCode=gamecode).first()
+        usersInGame = Game.getUsers('TDSOLK')
+        startLocs = StartLocation.getStartIds()
+
+        for i in range(len(usersInGame)):
+            userId = sample(usersInGame, 1)[0]
+            usersInGame.remove(userId)
+            charId = startLocs[i][0]
+            locId = startLocs[i][1]
+            pi = PlayerInfo(gameId=game.id, characterId=charId, locationId=locId, playerId=userId)
+            db.session.add(pi)
+            db.session.commit()
+            print(pi)
+        
+        return
+
+    @classmethod
+    def getGameState(cls, gamecode):
+        game = Game.query.filter_by(gameCode=gamecode).first()
+        pis = PlayerInfo.query.filter_by(gameId=game.id).join(User).add_column(User.username).join(Character).add_column(Character.character).join(Location).add_column(Location.locationName).all()
+
+        state = {}
+
+        for p in pis:
+            state[p[1]] = {'character': p[2], 'location': p[3]}
+        
+        return state
+
+    def __repr__(self) -> str:
+
+        user = User.query.filter_by(id=self.playerId).first()
+        game = Game.query.filter_by(id=self.gameId).first()
+        char = Character.query.filter_by(id=self.characterId).first()
+        loc = Location.query.filter_by(id=self.locationId).first()
+
+        return f"<PlayerInfo id: {self.id}, player: {user.username}, game: {game.gameCode}, char: {char.character}, loc: {loc.locationName}, isEliminated: {self.isEliminated}>"
+
+
 
 # PlayerOrder Table
 class PlayerOrder(db.Model):
@@ -206,11 +246,20 @@ class StartLocation(db.Model):
     locationId = Column(Integer, ForeignKey('cs.Locations.id'), nullable=False)
 
     @classmethod
-    def getStart(self):
+    def getStartNames(cls):
         pStart = StartLocation.query.join(Character, StartLocation.characterId==Character.id).join(Location, StartLocation.locationId==Location.id).add_column(Character.character).add_column(Location.locationName)
         startLocs = {}
         for p in pStart:
             startLocs[p[1]] = p[2]
+        
+        return startLocs
+    
+    @classmethod
+    def getStartIds(cls):
+        pStart = StartLocation.query.all()
+        startLocs = []
+        for p in pStart:
+            startLocs.append([p.characterId, p.locationId])
         
         return startLocs
 
@@ -310,4 +359,3 @@ class Winner(db.Model):
     id = Column(Integer, primary_key=True)
     playerId = Column(Integer, ForeignKey('cs.Users.id'), nullable=False)
     gameId = Column(Integer, ForeignKey('cs.Games.id'), nullable=False, unique=True)
-

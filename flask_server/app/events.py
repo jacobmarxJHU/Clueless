@@ -27,6 +27,7 @@ def handle_user_join(data):
         user = User.query.filter_by(username=name).first()
         user.sessionInfo = request.sid
         user.playerStatus = 1
+        user.isLeader = False
         commit_changes()
         print(user)
     except:
@@ -119,6 +120,7 @@ def handle_disconnect():
 
         user.sessionInfo = None
         user.activeGame = None
+        user.isLeader = False
 
         if game.playerCount == 1:
             game.playerCount = game.playerCount - 1

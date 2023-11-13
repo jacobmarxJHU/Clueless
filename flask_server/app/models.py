@@ -5,7 +5,7 @@ in the schema with primary and foreign keys. Please tweak as needed.
 
 from app import db
 from sqlalchemy import Integer, ForeignKey, String, Column, Boolean, CheckConstraint
-from random import choice
+from random import choice, sample
 from string import ascii_uppercase
 
 # TODO: Format with SQLAlchemy ORM format (decalarative base and mapped)
@@ -142,6 +142,9 @@ class Location(db.Model):
     locationName = Column(String(55), nullable=False)
     isRoom = Column(Boolean, default=False, nullable=False)
 
+    def __repr__(self) -> str:
+        return f"<Location {self.locationName}, room: {self.isRoom}>"
+
 
 # Paths Table
 class Path(db.Model):
@@ -153,6 +156,13 @@ class Path(db.Model):
     locationId2 = Column(Integer, ForeignKey('cs.Locations.id'), nullable=False)
     isSecret = Column(Boolean, default=False)
 
+    def __repr__(self) -> str:
+
+        loc1 = Location.query.filter_by(self.locationId1).first()
+        loc2 = Location.query.filter_by(self.locationId2).first()
+
+        return f"<Path loc1: {loc1.locationName}, loc2: {loc2.locationName}, secret={self.isSecret}>"
+    
 
 # PlayerInfo
 class PlayerInfo(db.Model):
@@ -166,6 +176,46 @@ class PlayerInfo(db.Model):
     locationId = Column(Integer, ForeignKey('cs.Locations.id'), nullable=False)
     isEliminated = Column(Boolean, default=False, nullable=False)
     playerId = Column(Integer, ForeignKey('cs.Users.id'), nullable=False)
+
+    @classmethod
+    def initializeGame(cls, gamecode:str):
+        game = Game.query.filter_by(gameCode=gamecode).first()
+        usersInGame = Game.getUsers('TDSOLK')
+        startLocs = StartLocation.getStartIds()
+
+        for i in range(len(usersInGame)):
+            userId = sample(usersInGame, 1)[0]
+            usersInGame.remove(userId)
+            charId = startLocs[i][0]
+            locId = startLocs[i][1]
+            pi = PlayerInfo(gameId=game.id, characterId=charId, locationId=locId, playerId=userId)
+            db.session.add(pi)
+            db.session.commit()
+            print(pi)
+        
+        return
+
+    @classmethod
+    def getGameState(cls, gamecode):
+        game = Game.query.filter_by(gameCode=gamecode).first()
+        pis = PlayerInfo.query.filter_by(gameId=game.id).join(User).add_column(User.username).join(Character).add_column(Character.character).join(Location).add_column(Location.locationName).all()
+
+        state = {}
+
+        for p in pis:
+            state[p[1]] = {'character': p[2], 'location': p[3]}
+        
+        return state
+
+    def __repr__(self) -> str:
+
+        user = User.query.filter_by(id=self.playerId).first()
+        game = Game.query.filter_by(id=self.gameId).first()
+        char = Character.query.filter_by(id=self.characterId).first()
+        loc = Location.query.filter_by(id=self.locationId).first()
+
+        return f"<PlayerInfo id: {self.id}, player: {user.username}, game: {game.gameCode}, char: {char.character}, loc: {loc.locationName}, isEliminated: {self.isEliminated}>"
+
 
 
 # PlayerOrder Table
@@ -206,11 +256,20 @@ class StartLocation(db.Model):
     locationId = Column(Integer, ForeignKey('cs.Locations.id'), nullable=False)
 
     @classmethod
-    def getStart(self):
+    def getStartNames(cls):
         pStart = StartLocation.query.join(Character, StartLocation.characterId==Character.id).join(Location, StartLocation.locationId==Location.id).add_column(Character.character).add_column(Location.locationName)
         startLocs = {}
         for p in pStart:
             startLocs[p[1]] = p[2]
+        
+        return startLocs
+    
+    @classmethod
+    def getStartIds(cls):
+        pStart = StartLocation.query.all()
+        startLocs = []
+        for p in pStart:
+            startLocs.append([p.characterId, p.locationId])
         
         return startLocs
 
@@ -278,6 +337,7 @@ class User(db.Model):
         return f"<User id: {self.id}, username: {self.username}, playerStatus: {self.playerStatus}, playerCode: {self.playerCode}, sessionInfo: {self.sessionInfo}, activeGame: {self.activeGame}>"
 
 
+
 # Weapons Table
 class Weapon(db.Model):
     __tablename__ = 'Weapons'
@@ -285,6 +345,9 @@ class Weapon(db.Model):
 
     id = Column(Integer, primary_key=True)
     weaponName = Column(String(20))
+
+    def __repr__(self) -> str:
+        return f"<Weapon {self.weaponName}>" 
 
 
 class WeaponLocation(db.Model):
@@ -299,6 +362,46 @@ class WeaponLocation(db.Model):
     gameId = Column(Integer, ForeignKey('cs.Games.id'), nullable=False)
     weapondId = Column(Integer, ForeignKey('cs.Weapons.id'), nullable=False)
 
+    @classmethod
+    def initializeGame(cls, gamecode):
+        game = Game.query.filter_by(gameCode=gamecode).first()
+
+        # randomly place weapons in rooms
+        weapons = Weapon.query.all()
+        locs = Location.query.filter_by(isRoom=True).all()
+
+        lSet = set()
+        for l in locs:
+            lSet.add(l.id)
+
+        for w in weapons:
+            locId = sample(lSet, 1)[0]
+            lSet.remove(locId)
+            wl = WeaponLocation(locationId=locId, weapondId=w.id, gameId=game.id)
+            db.session.add(wl)
+            db.session.commit()
+        
+        return
+    
+    @classmethod
+    def getWeaponState(cls, gamecode: str):
+        game = Game.query.filter_by(gameCode=gamecode).first()
+        wls = WeaponLocation.query.filter_by(gameId=game.id).join(Weapon).add_column(Weapon.weaponName).join(Location).add_column(Location.locationName).all()
+
+        weaponState = {}
+        for wl in wls:
+            weaponState[wl[1]] =  wl[2]
+        
+        return weaponState
+
+    def __repr__(self) -> str:
+        
+        game = Game.query.filter_by(id=self.gameId).first()
+        wep = Weapon.query.filter_by(id=self.weapondId).first()
+        loc = Location.query.filter_by(id=self.locationId).first()
+
+        return f"<WeaponLocation game: {game.gameCode}, location: {loc.locationName}, weapon: {wep.weaponName}"
+    
 
 # Winners table
 class Winner(db.Model):
@@ -310,4 +413,3 @@ class Winner(db.Model):
     id = Column(Integer, primary_key=True)
     playerId = Column(Integer, ForeignKey('cs.Users.id'), nullable=False)
     gameId = Column(Integer, ForeignKey('cs.Games.id'), nullable=False, unique=True)
-

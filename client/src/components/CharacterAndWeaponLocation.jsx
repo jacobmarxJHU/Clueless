@@ -55,7 +55,7 @@ const useStyles = makeStyles((theme) => ({
 const CharacterAndWeaponLocation = ({ socket }) => {
   const classes = useStyles();
 
-  /* Socket.io listener setup
+  /* Socket.io listener setup */
   const [characterData, setUserState] = useState([]);
   const [weaponData, setWeaponState] = useState([]);
   
@@ -88,27 +88,6 @@ const CharacterAndWeaponLocation = ({ socket }) => {
     weapon,
     location,
   }));
-*/
-
-  const characterRowsFake = [
-    { character: 'Miss Scarlet', username: 'Saron', location: 'Study' },
-    { character: 'Prof. Plum', username: 'Jacob', location: 'Library' },
-    { character: 'Col. Mustard', username: 'Nick', location: 'Billiard' },
-    { character: 'Miss Scarlet', username: '', location: 'Kitchen' },
-    { character: 'Prof. Plum', username: '', location: 'Ballroom' },
-    { character: 'Col. Mustard', username: '', location: 'Hallway xyz' },
-    // ... Add more rows as needed
-  ];
-
-  const weaponRowsFake = [
-    { weapon: 'Pipe', location: 'Study' },
-    { weapon: 'Knife', location: 'Hall' },
-    { weapon: 'Wrench', location: 'Lounge' },
-    { weapon: 'Rope', location: 'Library' },
-    { weapon: 'Candelstick', location: 'Hall' },
-    { weapon: 'Revolver', location: 'Ballroom' },
-    // ... Add more rows as needed
-  ];
 
   return (
     <Box className={classes.root}>
@@ -123,7 +102,7 @@ const CharacterAndWeaponLocation = ({ socket }) => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {characterRowsFake.map((row, index) => (
+            {characterRows.map((row, index) => (
               <TableRow key={index}>
                 <TableCell size="small" className={classes.characterCell}>
                   {row.character}
@@ -147,7 +126,7 @@ const CharacterAndWeaponLocation = ({ socket }) => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {weaponRowsFake.map((row, index) => (
+            {weaponRows.map((row, index) => (
               <TableRow key={index}>
                 <TableCell className={[classes.cell,classes.characterCell]}>{row.weapon}</TableCell>
                 <TableCell className={[classes.cell,classes.characterCell]}>{row.location}</TableCell>

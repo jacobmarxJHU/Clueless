@@ -38,8 +38,20 @@ class Card(db.Model):
     weaponId = Column(Integer, ForeignKey('cs.Weapons.id'))
 
     def __repr__(self):
-        return '<Card char: {}, weap: {}, loc: {}>'.format(self.characterId, self.weaponId, self.locationId)
 
+        loc = Location.query.filter_by(id=self.locationId).first()
+        ch = Character.query.filter_by(id=self.characterId).first()
+        wep = Weapon.query.filter_by(id=self.weaponId).first()
+
+        if loc:
+            string = f"location: {loc.locationName}"
+        elif ch:
+            string = f"character: {ch.character}"
+        elif wep:
+            string = f"weapon: {wep.weaponName}"
+
+        return f'<Card {string}>'
+    
 
 # Games Table
 class Game(db.Model):
@@ -290,9 +302,36 @@ class Solution(db.Model):
 
     id = Column(Integer, primary_key=True)
     characterId = Column(Integer, ForeignKey('cs.Characters.id'), nullable=False)
-    gameId = Column(Integer, ForeignKey('cs.Games.id'), nullable=False)
+    gameId = Column(Integer, ForeignKey('cs.Games.id'), nullable=False, unique=True)
     locationId = Column(Integer, ForeignKey('cs.Locations.id'), nullable=False)
     weaponId = Column(Integer, ForeignKey('cs.Weapons.id'), nullable=False)
+    
+    def generate(gamecode: str):
+        gameId = Game.query.filter_by(gameCode=gamecode).first().id
+
+        locations = Card.query.filter(Card.locationId.isnot(None)).all()
+        characters = Card.query.filter(Card.characterId.isnot(None)).all()
+        weapons = Card.query.filter(Card.weaponId.isnot(None)).all()
+
+        locId = choice(locations).locationId
+        wepId = choice(weapons).weaponId
+        charId = choice(characters).characterId
+        
+        sol = Solution(gameId=gameId, weaponId=wepId, characterId=charId, locationId=locId)
+        db.session.add(sol)
+        db.session.commit()
+    
+        return
+    
+    def __repr__(self) -> str:
+        
+        char = Character.query.filter_by(id=self.characterId).first()
+        game = Game.query.filter_by(id=self.gameId).first()
+        loc = Location.query.filter_by(id=self.locationId).first()
+        wep = Weapon.query.filter_by(id=self.weaponId).first()
+
+        return f"<Solution game: {game.id}, character: {char.character}, location: {loc.locationName}, weapon: {wep.weaponName}>"
+
 
 # Users table
 class User(db.Model):

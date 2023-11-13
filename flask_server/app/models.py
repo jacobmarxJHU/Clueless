@@ -315,6 +315,81 @@ class PlayerOrder(db.Model):
     turn = Column(Integer, default=-1, nullable=False)
     activeTurn = Column(Boolean, default=False, nullable=False)
 
+    @classmethod
+    def generate(cls, gamecode: str):
+        game=Game.query.filter_by(gameCode=gamecode).first()
+        print(game)
+
+        users = PlayerInfo.query.filter_by(gameId=game.id).join(Character, Character.id==PlayerInfo.characterId).add_columns(Character.character).all()
+
+        uList = []
+        characters = []
+        for u in users:
+            uList.append(u[0].playerId)
+            characters.append(u[1])
+
+        # if Miss Scarlet is selected, have her entered as the first turn
+        startTurn = 1
+        if 'Miss Scarlet' in characters:
+            print("Miss Scarlet found")
+            scarletIndex = characters.index('Miss Scarlet')
+            po = PlayerOrder(gameId=game.id, playerId=uList[scarletIndex], turn=startTurn)
+            db.session.add(po)
+            commit_changes()
+
+            uList.pop(scarletIndex)
+            startTurn += 1
+        
+        for i in range(startTurn, len(uList) + startTurn):
+            u = choice(uList)
+            uList.remove(u)
+            po = PlayerOrder(gameId=game.id, playerId=u, turn=i)
+            db.session.add(po)
+            commit_changes()
+        
+        return
+
+    @classmethod
+    def getStart(cls, gamecode: str) -> int:
+        game = Game.query.filter_by(gameCode=gamecode).first()
+
+        firstTurn = 1
+
+        po = PlayerOrder.query.filter_by(gameId=game.id, turn=firstTurn).first()
+
+        po.activeTurn = True
+        commit_changes()
+        
+        return po.playerId
+    
+    @classmethod
+    def getNext(cls, gamecode: str) -> int:
+        game = Game.query.filter_by(gameCode=gamecode).first()
+
+        poCurrent = PlayerOrder.query.filter_by(gameId=game.id, activeTurn=True).first()
+
+        nextTurn = poCurrent.turn + 1
+
+        poNext = PlayerOrder.query.filter_by(gameId=game.id, turn=nextTurn).first()
+
+        if not poNext:
+            nextTurn = 1
+            poNext = PlayerOrder.query.filter_by(gameId=game.id, turn=nextTurn).first()
+
+        poCurrent.activeTurn = False
+        poNext.activeTurn = True
+
+        commit_changes()
+
+        return poNext.playerId
+
+    def __repr__(self) -> str:
+
+        game = db.session.get(Game, self.gameId)
+        user = db.session.get(User, self.playerId)
+        return f"<PlayerOrder game: {game.gameCode}, user: {user.username}, turn: {self.turn}, activeTurn: {self.activeTurn}>"
+
+
 
 # PlayerStatus table
 class PlayerStatus(db.Model):
@@ -324,6 +399,9 @@ class PlayerStatus(db.Model):
 
     id = Column(Integer, primary_key=True)
     status = Column(String(20), nullable=False)
+
+    def __repr__(self) -> str:
+        return f"<PlayerStatus status: {self.status}>"
 
 
 # CharacterStart table - for initial character starting location

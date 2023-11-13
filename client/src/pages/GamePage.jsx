@@ -20,14 +20,16 @@ const GamePage = () => {
 
   console.log("Game Code:", gameCode); // Should log the game code from the URL
 
-  // Extract the username from the location state (fallback to an empty string if not provided)
+  // Extract the username and isLeader from the location state (fallback to an empty string if not provided)
   const username = location.state?.username || '';
+  const isLeader = location.state?.isLeader;
 
   return (
     <div>
       <GameLayout
         gameCode={gameCode} // Pass the gameCode from the URL
         username={username} // Pass the username from the routing state
+        isLeader={isLeader} // Pass the isLeader sstatus from the routing state
         chatMessages={mockChatMessages}
         userHand={mockPlayerHand}
       />

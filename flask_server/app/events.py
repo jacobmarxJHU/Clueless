@@ -148,10 +148,15 @@ def start_game(data):
         # Perform game start functions.
         # TODO: Add all necessary functions
         initialized_board = initialize_board(game_id)
+        print('emit!')
         emit('game_started', initialized_board)
-
+        
+        # Acknowledge the client that the event was received and handled
+        return {'status': 'Game started', 'board': initialized_board}
     except ValueError as e:
         emit('error', {'message': str(e)})
+         # If there was an error, acknowledge that as well
+        return {'status': 'error', 'message': str(e)}
 
 
 # 

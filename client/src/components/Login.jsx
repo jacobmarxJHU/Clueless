@@ -126,7 +126,10 @@ const Login = () => {
             socketInstance.on("pass_game", (updatedData) => {
                 console.log(updatedData);
                 navigate(`/game/${updatedData.gameCode}`, {
-                    state: { username: updatedData.username } 
+                    state: { 
+                        username: updatedData.username, 
+                        isLeader: updatedData.isLeader
+                    }
                   });
             });
         }

@@ -7,6 +7,7 @@ from app import db
 from sqlalchemy import Integer, ForeignKey, String, Column, Boolean, CheckConstraint
 from random import choice, sample
 from string import ascii_uppercase
+from .utility import commit_changes
 
 # TODO: Format with SQLAlchemy ORM format (decalarative base and mapped)
 # TODO: Add repr methods to each class
@@ -27,7 +28,6 @@ class Character(db.Model):
 
 # Cards Table
 class Card(db.Model):
-    # TODO: Add method to get the associated character, location, or weapon string
 
     __tablename__ = 'Cards'
     __table_args__ = {'schema': 'cs'}
@@ -36,9 +36,35 @@ class Card(db.Model):
     locationId = Column(Integer, ForeignKey('cs.Locations.id'))
     characterId = Column(Integer, ForeignKey('cs.Characters.id'))
     weaponId = Column(Integer, ForeignKey('cs.Weapons.id'))
+    
+    def getItem(self):
+        if self.locationId:
+            location = db.session.get(Location, self.locationId)
+            return location.locationName if location else None
 
+        elif self.characterId:
+            character = db.session.get(Character, self.characterId)
+            return character.character if character else None
+
+        elif self.weaponId:
+            weapon = db.session.get(Weapon, self.weaponId)
+            return weapon.weaponName if weapon else None
+
+        return None  # Return None if no card type matches
+            
     def __repr__(self):
-        return '<Card char: {}, weap: {}, loc: {}>'.format(self.characterId, self.weaponId, self.locationId)
+
+        if self.locationId:
+            loc = db.session.get(Location, self.locationId)
+            string = f"location: {loc.locationName}"
+        elif self.characterId:
+            ch = db.session.get(Character, self.characterId)
+            string = f"character: {ch.character}"
+        elif self.weaponId:
+            wep = db.session.get(Weapon, self.weaponId)
+            string = f"weapon: {wep.weaponName}"
+
+        return f'<Card {string}>'
 
 
 # Games Table
@@ -82,9 +108,9 @@ class Game(db.Model):
         game = Game.query.filter_by(gameCode=gamecode).first()
         users = User.query.filter_by(activeGame=game.id).all()
 
-        user_set = set()
+        user_set = []
         for u in users:
-            user_set.add(u.id)
+            user_set.append(u.id)
 
         return user_set
 
@@ -132,6 +158,65 @@ class Hand(db.Model):
     cardId = Column(Integer, ForeignKey('cs.Cards.id'), nullable=False)
     playerInfo = Column(Integer, ForeignKey('cs.PlayerInfos.id'), nullable=False)
 
+    @classmethod
+    def generateHand(cls, gamecode: str):
+        game = Game.query.filter_by(gameCode=gamecode).first()
+        pis = PlayerInfo.query.filter_by(gameId=game.id).all()
+        sol = Solution.query.filter_by(gameId=game.id).first()
+
+        badIds = [sol.characterCard, sol.locationCard, sol.weaponCard]
+
+        # generate hand
+        if not sol:
+            print("Error: this game does not have an associated solution")
+            return
+
+        cards = Card.query.filter(Card.id != badIds[0]).filter(Card.id != badIds[1]).filter(Card.id != badIds[2]).all()
+        
+        cardList = []
+        for c in cards:
+            cardList.append(c.id)
+
+        i = 0
+        while len(cardList) > 0 and i <= 18:
+            for p in pis:
+                if len(cardList) == 0:
+                    break
+
+                cardId = choice(cardList)
+                cardList.remove(cardId)
+                hand = Hand(cardId=cardId, playerInfo=p.id)
+                db.session.add(hand)
+                commit_changes()
+
+    @classmethod
+    def retrieveHand(cls, gamecode: str) -> dict:
+        game = Game.query.filter_by(gameCode=gamecode).first()
+        pis = PlayerInfo.query.filter_by(gameId=game.id).join(
+            User, User.id==PlayerInfo.playerId).add_columns(User.username, User.sessionInfo).all()
+        
+        outDict = {}
+        for pi in pis:
+            hand = Hand.query.filter_by(playerInfo=pi[0].id).all()
+            hList = []
+            for h in hand:
+                card = db.session.get(Card, h.cardId)
+                hList.append(card.getItem())
+
+            outDict[pi[1]] = {"session": pi[2], "hand": hList}
+        
+        return outDict
+
+
+    def __repr__(self) -> str:
+        card = db.session.get(Card, self.cardId)
+        pis = PlayerInfo.query.filter_by(id=self.playerInfo).join(Game, Game.id==PlayerInfo.gameId).join(User, User.id==PlayerInfo.playerId).add_columns(User.username, Game.gameCode).first()
+
+        gamecode = pis[2]
+        username = pis[1]
+
+        return f"<Hand card: {card.getItem()}, user: {username}, game: {gamecode}>"
+
 
 # Locations Table
 class Location(db.Model):
@@ -141,6 +226,9 @@ class Location(db.Model):
     id = Column(Integer, primary_key=True)
     locationName = Column(String(55), nullable=False)
     isRoom = Column(Boolean, default=False, nullable=False)
+
+    def __repr__(self) -> str:
+        return f"<Location {self.locationName}, room: {self.isRoom}>"
 
 
 # Paths Table
@@ -152,6 +240,44 @@ class Path(db.Model):
     locationId1 = Column(Integer, ForeignKey('cs.Locations.id'), nullable=False)
     locationId2 = Column(Integer, ForeignKey('cs.Locations.id'), nullable=False)
     isSecret = Column(Boolean, default=False)
+
+
+    @classmethod
+    def findConnected(cls, gamecode: str, username: str):
+        uid = User.query.filter_by(username=username).first().id
+        gid = Game.query.filter_by(gameCode=gamecode).first().id
+        loc = PlayerInfo.query.filter_by(playerId=uid, gameId=gid).first()
+
+        currLoc = loc.id
+        room = loc.isRoom
+
+        paths1 = Path.query.filter_by(locationId1=currLoc).join(
+            Location, Location.id==Path.locationId2).add_columns(
+                Location.locationName).all()
+        paths2 = Path.query.filter_by(locationId2=currLoc).join(
+            Location, Location.id==Path.locationId1).add_columns(
+                Location.locationName).all()
+        
+        newLocs = []
+
+        if paths2:
+            for p in paths1:
+                newLocs.append(p[1])
+
+        if paths2:
+            for p in paths2:
+                newLocs.append(p[1])
+
+        pathInfo = {"inRoom": room, 'locations': newLocs}
+        
+        return pathInfo
+
+    def __repr__(self) -> str:
+
+        loc1 = Location.query.filter_by(id=self.locationId1).first()
+        loc2 = Location.query.filter_by(id=self.locationId2).first()
+
+        return f"<Path loc1: {loc1.locationName}, loc2: {loc2.locationName}, secret={self.isSecret}>"
 
 
 # PlayerInfo
@@ -174,21 +300,24 @@ class PlayerInfo(db.Model):
         startLocs = StartLocation.getStartIds()
 
         for i in range(len(usersInGame)):
-            userId = sample(usersInGame, 1)[0]
+            userId = choice(usersInGame)
             usersInGame.remove(userId)
             charId = startLocs[i][0]
             locId = startLocs[i][1]
             pi = PlayerInfo(gameId=game.id, characterId=charId, locationId=locId, playerId=userId)
             db.session.add(pi)
-            db.session.commit()
-            print(pi)
+            commit_changes()
         
         return
 
     @classmethod
     def getGameState(cls, gamecode):
         game = Game.query.filter_by(gameCode=gamecode).first()
-        pis = PlayerInfo.query.filter_by(gameId=game.id).join(User).add_column(User.username).join(Character).add_column(Character.character).join(Location).add_column(Location.locationName).all()
+        pis = PlayerInfo.query.filter_by(gameId=game.id).join(
+            User, User.id==PlayerInfo.playerId).join(
+                Character, Character.id==PlayerInfo.characterId).join(
+                    Location, Location.id==PlayerInfo.locationId
+                ).add_columns(User.username, Character.character, Location.locationName).all()
 
         state = {}
 
@@ -221,6 +350,84 @@ class PlayerOrder(db.Model):
     turn = Column(Integer, default=-1, nullable=False)
     activeTurn = Column(Boolean, default=False, nullable=False)
 
+    @classmethod
+    def generate(cls, gamecode: str):
+        game=Game.query.filter_by(gameCode=gamecode).first()
+
+        users = PlayerInfo.query.filter_by(gameId=game.id).join(Character, Character.id==PlayerInfo.characterId).add_columns(Character.character).all()
+
+        uList = []
+        characters = []
+        for u in users:
+            uList.append(u[0].playerId)
+            characters.append(u[1])
+
+        # if Miss Scarlet is selected, have her entered as the first turn
+        startTurn = 1
+        if 'Miss Scarlet' in characters:
+            scarletIndex = characters.index('Miss Scarlet')
+            po = PlayerOrder(gameId=game.id, playerId=uList[scarletIndex], turn=startTurn)
+            db.session.add(po)
+            commit_changes()
+
+            uList.pop(scarletIndex)
+            startTurn += 1
+        
+        for i in range(startTurn, len(uList) + startTurn):
+            u = choice(uList)
+            uList.remove(u)
+            po = PlayerOrder(gameId=game.id, playerId=u, turn=i)
+            db.session.add(po)
+            commit_changes()
+        
+        return
+
+    @classmethod
+    def getStart(cls, gamecode: str) -> int:
+        game = Game.query.filter_by(gameCode=gamecode).first()
+
+        firstTurn = 1
+
+        pos = PlayerOrder.query.filter_by(gameId=game.id).join(User, User.id==PlayerOrder.playerId).add_columns(User.username).all()
+        
+        for po in pos:
+            if po[0].turn == firstTurn:
+                po[0].activeTurn = True
+                startUser = po[1]
+            else:
+                po[0].activeTurn = False
+        commit_changes()
+        
+        return startUser
+    
+    @classmethod
+    def getNext(cls, gamecode: str) -> int:
+        game = Game.query.filter_by(gameCode=gamecode).first()
+
+        poCurrent = PlayerOrder.query.filter_by(gameId=game.id, activeTurn=True).first()
+
+        nextTurn = poCurrent.turn + 1
+
+        poNext = PlayerOrder.query.filter_by(gameId=game.id, turn=nextTurn).join(User, User.id==PlayerOrder.playerId).add_columns(User.username).first()
+
+        if not poNext:
+            nextTurn = 1
+            poNext = PlayerOrder.query.filter_by(gameId=game.id, turn=nextTurn).join(User, User.id==PlayerOrder.playerId).add_columns(User.username).first()
+
+        poCurrent.activeTurn = False
+        poNext[0].activeTurn = True
+
+        commit_changes()
+
+        return poNext[1]
+
+    def __repr__(self) -> str:
+
+        game = db.session.get(Game, self.gameId)
+        user = db.session.get(User, self.playerId)
+        return f"<PlayerOrder game: {game.gameCode}, user: {user.username}, turn: {self.turn}, activeTurn: {self.activeTurn}>"
+
+
 
 # PlayerStatus table
 class PlayerStatus(db.Model):
@@ -230,6 +437,9 @@ class PlayerStatus(db.Model):
 
     id = Column(Integer, primary_key=True)
     status = Column(String(20), nullable=False)
+
+    def __repr__(self) -> str:
+        return f"<PlayerStatus status: {self.status}>"
 
 
 # CharacterStart table - for initial character starting location
@@ -247,7 +457,7 @@ class StartLocation(db.Model):
 
     @classmethod
     def getStartNames(cls):
-        pStart = StartLocation.query.join(Character, StartLocation.characterId==Character.id).join(Location, StartLocation.locationId==Location.id).add_column(Character.character).add_column(Location.locationName)
+        pStart = StartLocation.query.join(Character, StartLocation.characterId==Character.id).join(Location, StartLocation.locationId==Location.id).add_columns(Character.character, Location.locationName)
         startLocs = {}
         for p in pStart:
             startLocs[p[1]] = p[2]
@@ -279,10 +489,37 @@ class Solution(db.Model):
     __table_args__ = {'schema': 'cs'}
 
     id = Column(Integer, primary_key=True)
-    characterId = Column(Integer, ForeignKey('cs.Characters.id'), nullable=False)
-    gameId = Column(Integer, ForeignKey('cs.Games.id'), nullable=False)
-    locationId = Column(Integer, ForeignKey('cs.Locations.id'), nullable=False)
-    weaponId = Column(Integer, ForeignKey('cs.Weapons.id'), nullable=False)
+    characterCard = Column(Integer, ForeignKey('cs.Cards.id'), nullable=False)
+    gameId = Column(Integer, ForeignKey('cs.Games.id'), nullable=False, unique=True)
+    locationCard = Column(Integer, ForeignKey('cs.Cards.id'), nullable=False)
+    weaponCard = Column(Integer, ForeignKey('cs.Cards.id'), nullable=False)
+
+    def generate(gamecode: str):
+        gameId = Game.query.filter_by(gameCode=gamecode).first().id
+
+        locations = Card.query.filter(Card.locationId.isnot(None)).all()
+        characters = Card.query.filter(Card.characterId.isnot(None)).all()
+        weapons = Card.query.filter(Card.weaponId.isnot(None)).all()
+
+        
+        locId = choice(locations).id
+        wepId = choice(weapons).id
+        charId = choice(characters).id
+        
+        sol = Solution(gameId=gameId, weaponCard=wepId, characterCard=charId, locationCard=locId)
+        db.session.add(sol)
+        commit_changes()
+    
+        return
+
+    def __repr__(self) -> str:
+        
+        game = Game.query.filter_by(id=self.gameId).first()
+        cCard = db.session.get(Card, self.characterCard)
+        wCard = db.session.get(Card, self.weaponCard)
+        lCard = db.session.get(Card, self.locationCard)
+
+        return f"<Solution game: {game.id}, character: {cCard.getItem()}, location: {lCard.getItem()}, weapon: {wCard.getItem()}>"
 
 # Users table
 class User(db.Model):
@@ -335,6 +572,9 @@ class Weapon(db.Model):
     id = Column(Integer, primary_key=True)
     weaponName = Column(String(20))
 
+    def __repr__(self) -> str:
+        return f"<Weapon {self.weaponName}>" 
+
 
 class WeaponLocation(db.Model):
     # TODO: Add class method to populate initial locations per game
@@ -348,6 +588,46 @@ class WeaponLocation(db.Model):
     gameId = Column(Integer, ForeignKey('cs.Games.id'), nullable=False)
     weapondId = Column(Integer, ForeignKey('cs.Weapons.id'), nullable=False)
 
+    @classmethod
+    def initializeGame(cls, gamecode):
+        game = Game.query.filter_by(gameCode=gamecode).first()
+
+        # randomly place weapons in rooms
+        weapons = Weapon.query.all()
+        locs = Location.query.filter_by(isRoom=True).all()
+
+        lList = []
+        for l in locs:
+            lList.append(l.id)
+
+        for w in weapons:
+            locId = choice(lList)
+            lList.remove(locId)
+            wl = WeaponLocation(locationId=locId, weapondId=w.id, gameId=game.id)
+            db.session.add(wl)
+            commit_changes()
+        
+        return
+    
+    @classmethod
+    def getWeaponState(cls, gamecode: str):
+        game = Game.query.filter_by(gameCode=gamecode).first()
+        wls = WeaponLocation.query.filter_by(gameId=game.id).join(Weapon, Weapon.id==WeaponLocation.weapondId).join(Location, Location.id==WeaponLocation.locationId).add_columns(Weapon.weaponName, Location.locationName).all()
+
+        weaponState = {}
+        for wl in wls:
+            weaponState[wl[1]] =  wl[2]
+        
+        return weaponState
+
+    def __repr__(self) -> str:
+        
+        game = Game.query.filter_by(id=self.gameId).first()
+        wep = Weapon.query.filter_by(id=self.weapondId).first()
+        loc = Location.query.filter_by(id=self.locationId).first()
+
+        return f"<WeaponLocation game: {game.gameCode}, location: {loc.locationName}, weapon: {wep.weaponName}"
+    
 
 # Winners table
 class Winner(db.Model):

@@ -22,6 +22,10 @@ class Character(db.Model):
     id = Column(Integer, primary_key=True)
     character = Column(String(20), nullable=False)
 
+    @classmethod
+    def getChracterId(cls, cName):
+        return Character.query.filter_by(character=cName).first().id
+
     def __repr__(self):
         return '<Character {}>'.format(self.character)
 
@@ -51,7 +55,22 @@ class Card(db.Model):
             return weapon.weaponName if weapon else None
 
         return None  # Return None if no card type matches
-            
+
+    @classmethod
+    def getCardId(cls, cid=None, lid=None, wid=None):
+
+        if cid:
+            return Card.query.filter_by(characterId=cid).first().id
+        elif lid:
+            if not Location.checkIsRoom(lid=lid):
+                raise("Attempting to get a card with a hallway location")
+            return Card.query.filter_by(locationId=lid).first().id
+        elif wid:
+            return Card.query.filter_by(weaponId=wid).first().id
+        else:
+            print("ERROR")
+            return
+
     def __repr__(self):
 
         if self.locationId:
@@ -113,6 +132,10 @@ class Game(db.Model):
             user_set.append(u.id)
 
         return user_set
+
+    @classmethod
+    def getGameId(cls, gamecode):
+        return Game.query.filter_by(gameCode=gamecode).first().id
 
     def __repr__(self):
         return '<Game id: {}, status: {}, player count: {}, gameCode: {}>'.format(self.id, self.gameStatus, self.playerCount, self.gameCode)
@@ -227,6 +250,19 @@ class Location(db.Model):
     locationName = Column(String(55), nullable=False)
     isRoom = Column(Boolean, default=False, nullable=False)
 
+    @classmethod
+    def getLocId(cls, lName):
+        return Location.query.filter_by(locationName=lName).first().id
+    
+    @classmethod
+    def checkIsRoom(cls, lid=None, lName=None):
+        if lid:
+            return Location.query.filter_by(id=lid).first().isRoom
+        elif lName:
+            return Location.query.filter_by(locationName=lName).first().isRoom
+        else:
+            raise("calling Location.checkIsRoom with no arguments")
+        
     def __repr__(self) -> str:
         return f"<Location {self.locationName}, room: {self.isRoom}>"
 
@@ -326,6 +362,22 @@ class PlayerInfo(db.Model):
         
         return state
 
+    @classmethod
+    def getPlayerLocationId(cls, gamecode, username):
+        userId = User.getUserId(username)
+        gameId = Game.getGameId(gamecode)
+
+        return PlayerInfo.query.filter_by(gameId=gameId, playerId=userId).first().locationId
+
+    @classmethod
+    def getPlayerLocation(cls, gamecode, username):
+        userId = User.getUserId(username)
+        gameId = Game.getGameId(gamecode)
+
+        return PlayerInfo.query.filter_by(gameId=gameId, playerId=userId).join(
+            Location, Location.id==PlayerInfo.locationId
+        ).add_columns(Location.locationName).first()[1]
+
     def __repr__(self) -> str:
 
         user = User.query.filter_by(id=self.playerId).first()
@@ -334,7 +386,6 @@ class PlayerInfo(db.Model):
         loc = Location.query.filter_by(id=self.locationId).first()
 
         return f"<PlayerInfo id: {self.id}, player: {user.username}, game: {game.gameCode}, char: {char.character}, loc: {loc.locationName}, isEliminated: {self.isEliminated}>"
-
 
 
 # PlayerOrder Table
@@ -428,7 +479,6 @@ class PlayerOrder(db.Model):
         return f"<PlayerOrder game: {game.gameCode}, user: {user.username}, turn: {self.turn}, activeTurn: {self.activeTurn}>"
 
 
-
 # PlayerStatus table
 class PlayerStatus(db.Model):
 
@@ -512,6 +562,31 @@ class Solution(db.Model):
     
         return
 
+    @classmethod
+    def getSolution(cls, gamecode):
+        gameId = Game.getGameId(gamecode)
+        return Solution.query.filter_by(gameId=gameId).first()
+
+
+    @classmethod
+    def checkSol(cls, gamecode, location, weapon, character):
+
+        lid = Location.getLocId(location)
+        wid = Weapon.getWeaponId(weapon)
+        cid = Character.getChracterId(character)
+
+        wCard = Card.getCardId(wid=wid)
+        cCard = Card.getCardId(cid=cid)
+        lCard = Card.getCardId(lid=lid)
+
+        gameId = Game.getGameId(gamecode)
+        sol = Solution.query.filter_by(gameId=Game.getGameId(gamecode), locationCard=lCard, characterCard=cCard, weaponCard=wCard).first()
+        print(type(sol))
+        if sol is None:
+            return False
+        else:
+            return True
+
     def __repr__(self) -> str:
         
         game = Game.query.filter_by(id=self.gameId).first()
@@ -560,6 +635,14 @@ class User(db.Model):
     isLeader = Column(Boolean, default=False, nullable=False)
     activeGame = Column(Integer, ForeignKey('cs.Games.id'))
 
+    @classmethod
+    def getUserId(cls, username):
+        return User.query.filter_by(username=username).first().id
+    
+    @classmethod
+    def getSess(cls, username):
+        return User.query.filter_by(username=username).first().sessionInfo
+
     def __repr__(self):
         return f"<User id: {self.id}, username: {self.username}, playerStatus: {self.playerStatus}, playerCode: {self.playerCode}, sessionInfo: {self.sessionInfo}, activeGame: {self.activeGame}>"
 
@@ -571,6 +654,10 @@ class Weapon(db.Model):
 
     id = Column(Integer, primary_key=True)
     weaponName = Column(String(20))
+
+    @classmethod
+    def getWeaponId(cls, wName):
+        return Weapon.query.filter_by(weaponName=wName).first().id
 
     def __repr__(self) -> str:
         return f"<Weapon {self.weaponName}>" 

@@ -1,7 +1,7 @@
 from flask import request
 from flask_socketio import emit, join_room
 from .models import User, Game, db, PlayerInfo, Path, Location, Character, Weapon, Guess
-from .initialize_board import initialize_board
+from .board_manipulation import initialize_board
 import json
 from .utility import commit_changes
 from .gameplay import next_turn

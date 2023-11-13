@@ -1,6 +1,6 @@
 from flask import request
 from flask_socketio import emit, join_room
-from .models import User, Game, db, PlayerInfo
+from .models import User, Game, db, PlayerInfo, Path, Location
 from .initialize_board import initialize_board
 import json
 from .utility import commit_changes
@@ -135,7 +135,7 @@ def handle_disconnect():
 
         emit("message_chat", {"message": message}, to=game.gameCode)
     else:
-        print("Trying to diconnect from no game")
+        print("Trying to disconnect from no game")
 
 
 # This will control the socket io end of game start
@@ -154,12 +154,31 @@ def start_game(data):
         emit('error', {'message': str(e)})
 
 
-# 
 @socketio.on('action_move')
 def action_move(data):
-    # emits pop locations
+    """
+    Updates player location and emits that info to game status table.
 
-    pass
+    :param data: json with structure {username: username, location: location}
+    :return none
+    """
+    # Get game information
+    game_id = User.query.filter_by(username=data["username"]).first().activeGame
+    game = Game.query.filter_by(id=game_id).first()
+
+    # Get location ID to add to PlayerInfo
+    location_id = Location.query.filter_by(locationName=data["location"]).first().id
+
+    # Get player info record
+    player_info = PlayerInfo.query.filter_by(username=data["username"]).first()
+
+    # Update and commit player info with new location
+    player_info.locationId = location_id
+    commit_changes()
+
+    # Create message and emit message to summarize action
+    message = f"{data['username']} moved to {data['location']}"
+    emit("message_chat", {"message": message}, to=game.gameCode)
 
 
 @socketio.on('action_suggestion')

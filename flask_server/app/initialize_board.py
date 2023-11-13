@@ -205,7 +205,6 @@ def get_card_name(card):
     if card.locationId:
         location = Location.query.get(card.locationId)
         return location.name if location else None
-    
 
     elif card.characterId:
         character = Character.query.get(card.characterId)

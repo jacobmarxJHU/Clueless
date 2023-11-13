@@ -76,6 +76,18 @@ class Game(db.Model):
     playerCount = Column(Integer, CheckConstraint('playerCount >= 0 and playerCount <= 6'), default=0, nullable=False)
     gameCode = Column(String(6), nullable=False, default=createGameCode, unique=True)
 
+    @classmethod
+    def getUsers(cls, gamecode):
+        
+        game = Game.query.filter_by(gameCode=gamecode).first()
+        users = User.query.filter_by(activeGame=game.id).all()
+
+        user_set = set()
+        for u in users:
+            user_set.add(u.id)
+
+        return user_set
+
     def __repr__(self):
         return '<Game id: {}, status: {}, player count: {}, gameCode: {}>'.format(self.id, self.gameStatus, self.playerCount, self.gameCode)
 
@@ -192,6 +204,22 @@ class StartLocation(db.Model):
     id = Column(Integer, primary_key=True)
     characterId = Column(Integer, ForeignKey('cs.Characters.id'), nullable=False)
     locationId = Column(Integer, ForeignKey('cs.Locations.id'), nullable=False)
+
+    @classmethod
+    def getStart(self):
+        pStart = StartLocation.query.join(Character, StartLocation.characterId==Character.id).join(Location, StartLocation.locationId==Location.id).add_column(Character.character).add_column(Location.locationName)
+        startLocs = {}
+        for p in pStart:
+            startLocs[p[1]] = p[2]
+        
+        return startLocs
+
+    def __repr__(self) -> str:
+        
+        char = Character.query.filter_by(id=self.characterId).first()
+        loc = Location.query.filter_by(id=self.locationId).first()
+
+        return f"<StartLocation char: {char.character}, loc: {loc.locationName}>"
 
 
 # Solutions Table

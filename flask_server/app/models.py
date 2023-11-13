@@ -108,9 +108,9 @@ class Game(db.Model):
         game = Game.query.filter_by(gameCode=gamecode).first()
         users = User.query.filter_by(activeGame=game.id).all()
 
-        user_set = set()
+        user_set = []
         for u in users:
-            user_set.add(u.id)
+            user_set.append(u.id)
 
         return user_set
 
@@ -192,7 +192,8 @@ class Hand(db.Model):
     @classmethod
     def retrieveHand(cls, gamecode: str) -> dict:
         game = Game.query.filter_by(gameCode=gamecode).first()
-        pis = PlayerInfo.query.filter_by(gameId=game.id).join(User, User.id==PlayerInfo.playerId).add_columns(User.username).all()
+        pis = PlayerInfo.query.filter_by(gameId=game.id).join(
+            User, User.id==PlayerInfo.playerId).add_columns(User.username, User.sessionInfo).all()
         
         outDict = {}
         for pi in pis:
@@ -202,7 +203,7 @@ class Hand(db.Model):
                 card = db.session.get(Card, h.cardId)
                 hList.append(card.getItem())
 
-            outDict[pi[1]] = hList
+            outDict[pi[1]] = {"session": pi[2], "hand": hList}
         
         return outDict
 
@@ -240,10 +241,41 @@ class Path(db.Model):
     locationId2 = Column(Integer, ForeignKey('cs.Locations.id'), nullable=False)
     isSecret = Column(Boolean, default=False)
 
+
+    @classmethod
+    def findConnected(cls, gamecode: str, username: str):
+        uid = User.query.filter_by(username=username).first().id
+        gid = Game.query.filter_by(gameCode=gamecode).first().id
+        loc = PlayerInfo.query.filter_by(playerId=uid, gameId=gid).first()
+
+        currLoc = loc.id
+        room = loc.isRoom
+
+        paths1 = Path.query.filter_by(locationId1=currLoc).join(
+            Location, Location.id==Path.locationId2).add_columns(
+                Location.locationName).all()
+        paths2 = Path.query.filter_by(locationId2=currLoc).join(
+            Location, Location.id==Path.locationId1).add_columns(
+                Location.locationName).all()
+        
+        newLocs = []
+
+        if paths2:
+            for p in paths1:
+                newLocs.append(p[1])
+
+        if paths2:
+            for p in paths2:
+                newLocs.append(p[1])
+
+        pathInfo = {"inRoom": room, 'locations': newLocs}
+        
+        return pathInfo
+
     def __repr__(self) -> str:
 
-        loc1 = Location.query.filter_by(self.locationId1).first()
-        loc2 = Location.query.filter_by(self.locationId2).first()
+        loc1 = Location.query.filter_by(id=self.locationId1).first()
+        loc2 = Location.query.filter_by(id=self.locationId2).first()
 
         return f"<Path loc1: {loc1.locationName}, loc2: {loc2.locationName}, secret={self.isSecret}>"
 
@@ -268,21 +300,24 @@ class PlayerInfo(db.Model):
         startLocs = StartLocation.getStartIds()
 
         for i in range(len(usersInGame)):
-            userId = sample(usersInGame, 1)[0]
+            userId = choice(usersInGame)
             usersInGame.remove(userId)
             charId = startLocs[i][0]
             locId = startLocs[i][1]
             pi = PlayerInfo(gameId=game.id, characterId=charId, locationId=locId, playerId=userId)
             db.session.add(pi)
             commit_changes()
-            print(pi)
         
         return
 
     @classmethod
     def getGameState(cls, gamecode):
         game = Game.query.filter_by(gameCode=gamecode).first()
-        pis = PlayerInfo.query.filter_by(gameId=game.id).join(User, User.id==PlayerInfo.playerId).join(Character, Character.id==PlayerInfo.characterId).join(Location, Location.id==PlayerInfo.id).add_columns(User.username, Character.character, Location.locationName).all()
+        pis = PlayerInfo.query.filter_by(gameId=game.id).join(
+            User, User.id==PlayerInfo.playerId).join(
+                Character, Character.id==PlayerInfo.characterId).join(
+                    Location, Location.id==PlayerInfo.locationId
+                ).add_columns(User.username, Character.character, Location.locationName).all()
 
         state = {}
 
@@ -318,7 +353,6 @@ class PlayerOrder(db.Model):
     @classmethod
     def generate(cls, gamecode: str):
         game=Game.query.filter_by(gameCode=gamecode).first()
-        print(game)
 
         users = PlayerInfo.query.filter_by(gameId=game.id).join(Character, Character.id==PlayerInfo.characterId).add_columns(Character.character).all()
 
@@ -331,7 +365,6 @@ class PlayerOrder(db.Model):
         # if Miss Scarlet is selected, have her entered as the first turn
         startTurn = 1
         if 'Miss Scarlet' in characters:
-            print("Miss Scarlet found")
             scarletIndex = characters.index('Miss Scarlet')
             po = PlayerOrder(gameId=game.id, playerId=uList[scarletIndex], turn=startTurn)
             db.session.add(po)

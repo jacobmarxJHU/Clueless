@@ -23,12 +23,16 @@ const PlayerActions = () => {
   const classes = useStyles();
 
   // Handlers for the buttons' onClick events
+  const handleMove = () => {
+    console.log('Move'); // Placeholder for actual logic
+  };
+
   const handleSuggestion = () => {
-    console.log('Suggestion made'); // Placeholder for actual logic
+    console.log('Suggestion'); // Placeholder for actual logic
   };
 
   const handleAccusation = () => {
-    console.log('Accusation made'); // Placeholder for actual logic
+    console.log('Accusation'); // Placeholder for actual logic
   };
 
   return (
@@ -39,9 +43,9 @@ const PlayerActions = () => {
           variant="contained"
           color="primary"
           className={classes.button}
-          onClick={handleSuggestion}
+          onClick={handleMove}
         >
-          Make a Move
+          Move
         </Button>
         <Button
           variant="contained"

@@ -1,11 +1,12 @@
 from flask import request
 from flask_socketio import emit, join_room
-from .models import User, Game, db, PlayerInfo, Path, Location
+from .models import User, Game, db, PlayerInfo, Path, Location, Character, Weapon, Guess
 from .initialize_board import initialize_board
 import json
 from .utility import commit_changes
 
 from .extensions import socketio
+
 
 @socketio.on("connect")
 def handle_connect():
@@ -183,8 +184,86 @@ def action_move(data):
 
 @socketio.on('action_suggestion')
 def action_suggestion(data):
+    """
+    Add user suggestion to guesses table and emit suggestion as message
 
-    pass
+    :param data: json with structure {username: username, character: character, weapon: weapon, room: room}
+    :return none
+    """
+
+    # TODO:
+    #   Error handling
+    #   Asynchronous queries? Target/dream stuff
+    #   Function decomposition
+
+    # Get player and game IDs
+    user = User.query.filter_by(username=data["username"]).first()
+    player_id = user.id
+    game_id = user.activeGame
+
+    # Get IDs for incoming data
+    character_id = Character.query.filter_by(characterName=data["character"]).first().id
+    weapon_id = Weapon.query.filter_by(weaponName=data["weapon"]).first().id
+    location_id = Location.query.filter_by(locationName=data["room"]).first().id
+
+    # Create new Guess entry from suggestion
+    new_guess = Guess(userId=player_id,
+                      gameId=game_id,
+                      characterId=character_id,
+                      weaponId=weapon_id,
+                      locationId=location_id)
+
+    # Add and commit new Guess entry
+    db.session.add(new_guess)
+    commit_changes()
+
+    # Get game info for message
+    game = Game.query.filter_by(id=game_id).first()
+
+    # Create message and emit message to summarize action
+    message = f"{data['username']} has suggested: {data['character']}, {data['room']}, {data['weapon']}"
+    emit("message_chat", {"message": message}, to=game.gameCode)
+
+
+@socketio.on('action_accuse')
+def action_accuse(data):
+    """
+    Add user accusation to guesses table and emit suggestion as message
+
+    :param data: json with structure {username: username, character: character, weapon: weapon, room: room}
+    :return none
+    """
+
+    # TODO: If we got suggestion/accusation specifier from the front-end in the json object we could consolidate this
+    #   with the action_suggestion function
+
+    # Get player and game IDs
+    user = User.query.filter_by(username=data["username"]).first()
+    player_id = user.id
+    game_id = user.activeGame
+
+    # Get IDs for incoming data
+    character_id = Character.query.filter_by(characterName=data["character"]).first().id
+    weapon_id = Weapon.query.filter_by(weaponName=data["weapon"]).first().id
+    location_id = Location.query.filter_by(locationName=data["room"]).first().id
+
+    # Create new Guess entry from suggestion
+    new_guess = Guess(userId=player_id,
+                      gameId=game_id,
+                      characterId=character_id,
+                      weaponId=weapon_id,
+                      locationId=location_id)
+
+    # Add and commit new Guess entry
+    db.session.add(new_guess)
+    commit_changes()
+
+    # Get game info for message
+    game = Game.query.filter_by(id=game_id).first()
+
+    # Create message and emit message to summarize action
+    message = f"{data['username']} has accused: {data['character']}, {data['room']}, {data['weapon']}"
+    emit("message_chat", {"message": message}, to=game.gameCode)
 
 
 @socketio.on('action_turnEnd')
@@ -193,7 +272,3 @@ def action_turnEnd(data):
     pass
 
 
-@socketio.on('action_accuse')
-def action_accuse(data):
-
-    pass

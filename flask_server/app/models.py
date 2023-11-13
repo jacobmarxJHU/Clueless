@@ -355,12 +355,17 @@ class PlayerOrder(db.Model):
 
         firstTurn = 1
 
-        po = PlayerOrder.query.filter_by(gameId=game.id, turn=firstTurn).first()
-
-        po.activeTurn = True
+        pos = PlayerOrder.query.filter_by(gameId=game.id).join(User, User.id==PlayerOrder.playerId).add_columns(User.username).all()
+        
+        for po in pos:
+            if po[0].turn == firstTurn:
+                po[0].activeTurn = True
+                startUser = po[1]
+            else:
+                po[0].activeTurn = False
         commit_changes()
         
-        return po.playerId
+        return startUser
     
     @classmethod
     def getNext(cls, gamecode: str) -> int:
@@ -370,18 +375,18 @@ class PlayerOrder(db.Model):
 
         nextTurn = poCurrent.turn + 1
 
-        poNext = PlayerOrder.query.filter_by(gameId=game.id, turn=nextTurn).first()
+        poNext = PlayerOrder.query.filter_by(gameId=game.id, turn=nextTurn).join(User, User.id==PlayerOrder.playerId).add_columns(User.username).first()
 
         if not poNext:
             nextTurn = 1
-            poNext = PlayerOrder.query.filter_by(gameId=game.id, turn=nextTurn).first()
+            poNext = PlayerOrder.query.filter_by(gameId=game.id, turn=nextTurn).join(User, User.id==PlayerOrder.playerId).add_columns(User.username).first()
 
         poCurrent.activeTurn = False
-        poNext.activeTurn = True
+        poNext[0].activeTurn = True
 
         commit_changes()
 
-        return poNext.playerId
+        return poNext[1]
 
     def __repr__(self) -> str:
 

@@ -4,6 +4,7 @@ from .models import User, Game, db, PlayerInfo, Path, Location, Character, Weapo
 from .initialize_board import initialize_board
 import json
 from .utility import commit_changes
+from .gameplay import next_turn
 
 from .extensions import socketio
 
@@ -191,38 +192,52 @@ def action_suggestion(data):
     :return none
     """
 
-    # TODO:
-    #   Error handling
-    #   Asynchronous queries? Target/dream stuff
-    #   Function decomposition
+    try:
+        # Get player and game IDs
+        user = User.query.filter_by(username=data["username"]).first()
+        if not user:
+            raise ValueError("User not found")
 
-    # Get player and game IDs
-    user = User.query.filter_by(username=data["username"]).first()
-    player_id = user.id
-    game_id = user.activeGame
+        player_id = user.id
+        game_id = user.activeGame
 
-    # Get IDs for incoming data
-    character_id = Character.query.filter_by(characterName=data["character"]).first().id
-    weapon_id = Weapon.query.filter_by(weaponName=data["weapon"]).first().id
-    location_id = Location.query.filter_by(locationName=data["room"]).first().id
+        # Validate and get IDs for incoming data
+        character = Character.query.filter_by(characterName=data["character"]).first()
+        weapon = Weapon.query.filter_by(weaponName=data["weapon"]).first()
+        location = Location.query.filter_by(locationName=data["room"]).first()
 
-    # Create new Guess entry from suggestion
-    new_guess = Guess(userId=player_id,
-                      gameId=game_id,
-                      characterId=character_id,
-                      weaponId=weapon_id,
-                      locationId=location_id)
+        if not all([character, weapon, location]):
+            raise ValueError("Character, Weapon, or Location not found")
 
-    # Add and commit new Guess entry
-    db.session.add(new_guess)
-    commit_changes()
+        character_id = character.id
+        weapon_id = weapon.id
+        location_id = location.id
 
-    # Get game info for message
-    game = Game.query.filter_by(id=game_id).first()
+        # Create new Guess entry from suggestion
+        new_guess = Guess(userId=player_id,
+                          gameId=game_id,
+                          characterId=character_id,
+                          weaponId=weapon_id,
+                          locationId=location_id)
 
-    # Create message and emit message to summarize action
-    message = f"{data['username']} has suggested: {data['character']}, {data['room']}, {data['weapon']}"
-    emit("message_chat", {"message": message}, to=game.gameCode)
+        # Add and commit new Guess entry
+        db.session.add(new_guess)
+        commit_changes()
+
+        # Get game info for message
+        game = Game.query.filter_by(id=game_id).first()
+
+        # Create message and emit message to summarize action
+        message = f"{data['username']} has suggested: {data['character']}, {data['room']}, {data['weapon']}"
+        emit("message_chat", {"message": message}, to=game.gameCode)
+
+    except Exception as e:
+        # Log and emit the error
+        db.session.rollback()
+        emit("error_message", {"error": str(e)})
+
+        # Print error
+        print(f"Error in action_suggestion: {e}")
 
 
 @socketio.on('action_accuse')
@@ -236,39 +251,63 @@ def action_accuse(data):
 
     # TODO: If we got suggestion/accusation specifier from the front-end in the json object we could consolidate this
     #   with the action_suggestion function
+    try:
+        # Get player and game IDs
+        user = User.query.filter_by(username=data["username"]).first()
+        if not user:
+            raise ValueError("User not found")
 
-    # Get player and game IDs
-    user = User.query.filter_by(username=data["username"]).first()
-    player_id = user.id
-    game_id = user.activeGame
+        player_id = user.id
+        game_id = user.activeGame
 
-    # Get IDs for incoming data
-    character_id = Character.query.filter_by(characterName=data["character"]).first().id
-    weapon_id = Weapon.query.filter_by(weaponName=data["weapon"]).first().id
-    location_id = Location.query.filter_by(locationName=data["room"]).first().id
+        # Validate and get IDs for incoming data
+        character = Character.query.filter_by(characterName=data["character"]).first()
+        weapon = Weapon.query.filter_by(weaponName=data["weapon"]).first()
+        location = Location.query.filter_by(locationName=data["room"]).first()
 
-    # Create new Guess entry from suggestion
-    new_guess = Guess(userId=player_id,
-                      gameId=game_id,
-                      characterId=character_id,
-                      weaponId=weapon_id,
-                      locationId=location_id)
+        if not all([character, weapon, location]):
+            raise ValueError("Character, Weapon, or Location not found")
 
-    # Add and commit new Guess entry
-    db.session.add(new_guess)
-    commit_changes()
+        character_id = character.id
+        weapon_id = weapon.id
+        location_id = location.id
 
-    # Get game info for message
-    game = Game.query.filter_by(id=game_id).first()
+        # Create new Guess entry from suggestion
+        new_guess = Guess(userId=player_id,
+                          gameId=game_id,
+                          characterId=character_id,
+                          weaponId=weapon_id,
+                          locationId=location_id)
 
-    # Create message and emit message to summarize action
-    message = f"{data['username']} has accused: {data['character']}, {data['room']}, {data['weapon']}"
-    emit("message_chat", {"message": message}, to=game.gameCode)
+        # Add and commit new Guess entry
+        db.session.add(new_guess)
+        commit_changes()
+
+        # Get game info for message
+        game = Game.query.filter_by(id=game_id).first()
+
+        # Create message and emit message to summarize action
+        message = f"{data['username']} has accused: {data['character']}, {data['room']}, {data['weapon']}"
+        emit("message_chat", {"message": message}, to=game.gameCode)
+
+    except Exception as e:
+        # Log and emit the error
+        db.session.rollback()
+        emit("error_message", {"error": str(e)})
+
+        # Print the error
+        print(f"Error in action_suggestion: {e}")
 
 
 @socketio.on('action_turnEnd')
 def action_turnEnd(data):
+    """
+    Invokes next turn function.
 
-    pass
+    :param data: json object with structure {gamecode: gamecode}
+    :return: None
+    """
 
-
+    # Get game code and invoke next turn
+    game_code = data["gamecode"]
+    next_turn(game_code)

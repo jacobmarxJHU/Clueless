@@ -2,7 +2,7 @@
 This file contains functions that are called during gameplay.
 """
 
-from .models import db, Game, User, PlayerInfo, PlayerOrder
+from .models import db, Game, User, PlayerInfo, PlayerOrder, WeaponLocation
 from .utility import commit_changes
 
 
@@ -54,3 +54,8 @@ def next_turn(game_code: str):
         raise e
 
 
+def generateGameState(gamecode):
+    playerState = PlayerInfo.getGameState(gamecode)
+    weaponState = WeaponLocation.getWeaponState(gamecode)
+    
+    return {"userState": playerState, "weaponState": weaponState}

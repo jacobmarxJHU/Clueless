@@ -21,12 +21,12 @@ const useStyles = makeStyles((theme) => ({
   // You might need to adjust the PlayerHand and PlayerActions styles if they are not aligned properly
 }));
 
-const PlayerPanel = ({ userHand, gameCode }) => {
+const PlayerPanel = ({ username, userHand, gameCode, socket }) => {
   const classes = useStyles();
 
   return (
     <Paper className={classes.root} elevation={2}>
-      <PlayerActions />
+      <PlayerActions gameCode={gameCode} socket={socket} username={username} />
       <Divider className={classes.divider} />
       <PlayerHand userHand={userHand} />
       <Typography variant="body2">Game Code: {gameCode}</Typography>

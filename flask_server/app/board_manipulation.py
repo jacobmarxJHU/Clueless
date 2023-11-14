@@ -77,13 +77,13 @@ def emitHands(gamecode):
         char_names[p[1]] = p[2]
 
     # Add character assignments to hands dictionary
-    hands["Characters"] = char_names
+    return_dict = {"playerHands": hands, "playerCharacters": char_names}
 
     #TODO: Emit to single player; I think this should work
     # emit("pop_hand", hands, to=gamecode)
     print('Here are the hands and character names: ')
-    print(hands)
-    emit("pop_hand", hands)
+    print(return_dict)
+    emit("pop_hand", return_dict)
 
 
 def emitState(gamecode: str):

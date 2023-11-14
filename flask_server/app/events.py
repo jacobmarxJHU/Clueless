@@ -85,8 +85,8 @@ def handle_user_join(data):
             db.session.commit()
             user.isLeader = True
             commit_changes()
-            print(game)
-            print(user)
+            # print(game)
+            # print(user)
         except:
             print("error creating a new game from scratch")
 
@@ -100,6 +100,10 @@ def handle_user_join(data):
 
     join_room(game.gameCode)
 
+    print('after join room')
+    print(game)
+    print(user)
+
     emit("pass_game", {"gameCode": game.gameCode, "username": name, "isLeader": user.isLeader})
 
     message = f"User {name} has joined the game"
@@ -112,32 +116,32 @@ def handle_disconnect():
     print("Client disconnected")
     print(request.sid)
 
-    user = User.query.filter_by(sessionInfo=request.sid).first()
-
-    if user and user.activeGame:
-
-        game = Game.query.filter_by(id=user.activeGame).first()
-        print(user)
-        print(game)
-
-        user.sessionInfo = None
-        user.activeGame = None
-        user.isLeader = False
-
-        if game.playerCount == 1:
-            game.playerCount = game.playerCount - 1
-            game.gameStatus = 2
-
-        db.session.commit()
-
-        print(user)
-        print(game)
-
-        message = f"User {user.username} has joined the game"
-
-        emit("message_chat", {"message": message}, to=game.gameCode)
-    else:
-        print("Trying to disconnect from no game")
+    # user = User.query.filter_by(sessionInfo=request.sid).first()
+    #
+    # # if user and user.activeGame:
+    # #
+    #     game = Game.query.filter_by(id=user.activeGame).first()
+    #     print(user)
+    #     print(game)
+    #
+    #     user.sessionInfo = None
+    #     user.activeGame = None
+    #     user.isLeader = False
+    #
+    #     if game.playerCount == 1:
+    #         game.playerCount = game.playerCount - 1
+    #         game.gameStatus = 2
+    #
+    #     db.session.commit()
+    #
+    #     print(user)
+    #     print(game)
+    #
+    #     message = f"User {user.username} has joined the game"
+    #
+    #     emit("message_chat", {"message": message}, to=game.gameCode)
+    # else:
+    #     print("Trying to disconnect from no game")
 
 
 # This will control the socket io end of game start
@@ -150,7 +154,7 @@ def start_game(data):
         # Perform game start functions.
         # TODO: Add all necessary functions
         initialized_board = initialize_board(game_id)
-        print('emit!')
+        print('emit initialized board!')
         emit('game_started', initialized_board)
         
         # Acknowledge the client that the event was received and handled

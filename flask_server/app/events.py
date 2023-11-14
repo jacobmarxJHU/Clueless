@@ -1,6 +1,6 @@
 from flask import request
 from flask_socketio import emit, join_room
-from .models import User, Game, db, PlayerInfo, Path, Location, Character, Weapon, Guess
+from .models import User, Game, db, PlayerInfo, Path, Location, Character, Weapon, Guess, Solution
 from .board_manipulation import initialize_board
 import json
 from .utility import commit_changes
@@ -264,7 +264,7 @@ def action_accuse(data):
 
         player_id = user.id
         game_id = user.activeGame
-
+        """
         # Validate and get IDs for incoming data
         character = Character.query.filter_by(characterName=data["character"]).first()
         weapon = Weapon.query.filter_by(weaponName=data["weapon"]).first()
@@ -288,12 +288,18 @@ def action_accuse(data):
         db.session.add(new_guess)
         commit_changes()
 
+        """
         # Get game info for message
         game = Game.query.filter_by(id=game_id).first()
+
+        Guess.addGuess(game.gameCode, data["username"], data['room'], data['character'], data['weapon'])
 
         # Create message and emit message to summarize action
         message = f"{data['username']} has accused: {data['character']}, {data['room']}, {data['weapon']}"
         emit("message_chat", {"message": message}, to=game.gameCode)
+
+        # compare to solution
+        isCorrect = Solution.checkSol(game.gameCode, )
 
     except Exception as e:
         # Log and emit the error

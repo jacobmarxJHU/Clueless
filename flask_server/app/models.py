@@ -164,6 +164,20 @@ class Guess(db.Model):
     locationId = Column(Integer, ForeignKey('cs.Locations.id'), nullable=False)
     weaponId = Column(Integer, ForeignKey('cs.Weapons.id'), nullable=False)
     playerId = Column(Integer, ForeignKey('cs.Users.id'), nullable=False)
+ 
+    @classmethod
+    def addGuess(cls, gamecode, username, location, character, weapon):
+        
+        gid = Game.getGameId(gamecode)
+        uid = User.getUserId(username)
+        lid = Location.getLocId(location)
+        wid = Weapon.getWeaponId(weapon)
+        cid = Character.getChracterId(character)
+
+        guess = Guess(characterId=cid, weaponId=wid, locationId=lid, playerId=uid, gameId=gid)
+        db.session.add(guess)
+        commit_changes()
+        return
 
     def __repr__(self):
         return '<Guess {}>'.format(self.id)
@@ -180,12 +194,13 @@ class Hand(db.Model):
     id = Column(Integer, primary_key=True)
     cardId = Column(Integer, ForeignKey('cs.Cards.id'), nullable=False)
     playerInfo = Column(Integer, ForeignKey('cs.PlayerInfos.id'), nullable=False)
+    gameId = Column(Integer, ForeignKey('cs.Games.id'), nullable=False)
 
     @classmethod
     def generateHand(cls, gamecode: str):
-        game = Game.query.filter_by(gameCode=gamecode).first()
-        pis = PlayerInfo.query.filter_by(gameId=game.id).all()
-        sol = Solution.query.filter_by(gameId=game.id).first()
+        gid = Game.getGameId(gamecode)
+        pis = PlayerInfo.query.filter_by(gameId=gid).all()
+        sol = Solution.query.filter_by(gameId=gid).first()
 
         badIds = [sol.characterCard, sol.locationCard, sol.weaponCard]
 
@@ -208,7 +223,7 @@ class Hand(db.Model):
 
                 cardId = choice(cardList)
                 cardList.remove(cardId)
-                hand = Hand(cardId=cardId, playerInfo=p.id)
+                hand = Hand(cardId=cardId, playerInfo=p.id, gameId=gid)
                 db.session.add(hand)
                 commit_changes()
 

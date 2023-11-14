@@ -11,7 +11,6 @@ from flask_socketio import emit
 
 # Master initialize board function to pass initialized game state to front end
 def initialize_board(gamecode: str):
-    
     # CONFIRM GAME IS EMPTY and change to active
     game = Game.query.filter_by(gameCode=gamecode).first()
 
@@ -38,7 +37,7 @@ def initialize_board(gamecode: str):
     
     # GETTING INFO TO BE PASSED TO USER
     startingUser = PlayerOrder.getStart(gamecode)
-
+    
     # PASSING GAME STATE TO FRONT END
     emitState(gamecode)
     emitHands(gamecode)
@@ -57,20 +56,23 @@ def emitTurnInfo(gamecode: str, username: str = None):
     emitPackage = {username: paths}
     print(emitPackage)
 
-    emit("start_turn", emitPackage, to=gamecode)
+    # emit("start_turn", emitPackage, to=gamecode)
+    emit("start_turn", emitPackage)
 
 
 def emitHands(gamecode):
     hands = Hand.retrieveHand(gamecode)
     
     #TODO: Emit to single player; I think this should work
-    emit("pop_hand", hands, to=gamecode)
+    # emit("pop_hand", hands, to=gamecode)
+    emit("pop_hand", hands)
 
 
 def emitState(gamecode: str):
     state = generateGameState(gamecode)
     print(state)
-    emit("pop_locations", state, to=gamecode)
+    # emit("pop_locations", state, to=gamecode)
+    emit("pop_locations", state)
 
 
 def generateGameState(gamecode):

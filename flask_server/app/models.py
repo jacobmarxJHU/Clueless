@@ -7,7 +7,7 @@ from app import db
 from sqlalchemy import Integer, ForeignKey, String, Column, Boolean, CheckConstraint
 from random import choice, sample
 from string import ascii_uppercase
-from utility import commit_changes
+from .utility import commit_changes
 
 # TODO: Format with SQLAlchemy ORM format (decalarative base and mapped)
 # TODO: Add repr methods to each class

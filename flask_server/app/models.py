@@ -407,7 +407,7 @@ class PlayerInfo(db.Model):
     @classmethod
     def initializeGame(cls, gamecode:str):
         game = Game.query.filter_by(gameCode=gamecode).first()
-        usersInGame = Game.getUsers('TDSOLK')
+        usersInGame = Game.getUsers(gamecode)
         startLocs = StartLocation.getStartIds()
 
         for i in range(len(usersInGame)):

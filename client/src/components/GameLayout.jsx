@@ -74,6 +74,9 @@ const GameLayout = ({ username, gameCode, isLeader, chatMessages, userHand }) =>
     });
     setSocket(gameSocket);
 
+    // Restore the user session
+    gameSocket.emit("user_join", { username, gameCode });
+
     // Event listeners for socket connection
     gameSocket.on("connect", () => {
       console.log("Connected to socket.io server from GameLayout");

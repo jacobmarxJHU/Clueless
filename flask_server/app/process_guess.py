@@ -42,7 +42,8 @@ def disprove_suggestion(gamecode: str):
             and active_guess.weaponId == game_solution.weaponCard:
 
         message = f"{active_player.username}'s suggestion could not be disproven."
-        socketio.emit("suggestion_result", message, to=gamecode)
+        # socketio.emit("suggestion_result", message, to=gamecode)
+        socketio.emit("suggestion_result", message)
         return
 
     # TODO: Possible last resort disprove where we just find the card that disproves from collection of all cards

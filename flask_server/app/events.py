@@ -153,12 +153,16 @@ def start_game(data):
     try:
         # Perform game start functions.
         # TODO: Add all necessary functions
-        initialized_board = initialize_board(game_id)
-        print('emit initialized board!')
-        emit('game_started', initialized_board)
+        # emit('pop_locations', initialized_board)
+        # print('emit initialized board!')
+        # print(initialized_board)
+
+        # initialize_board will perform game start functions
+        initialize_board(game_id)
         
         # Acknowledge the client that the event was received and handled
-        return {'status': 'Game started', 'board': initialized_board}
+        # return {'status': 'Game started', 'board': initialized_board} 
+        return {'status': 'Game started'}
     except ValueError as e:
         emit('error', {'message': str(e)})
          # If there was an error, acknowledge that as well
@@ -183,7 +187,8 @@ def action_move(data):
 
     # Create message and emit message to summarize action
     message = f"{data['username']} moved to {data['location']}"
-    emit("message_chat", {"message": message}, to=gamecode)
+    # emit("message_chat", {"message": message}, to=gamecode)
+    emit("message_chat", {"message": message})
 
 
 @socketio.on('action_suggestion')
@@ -210,14 +215,16 @@ def action_suggestion(data):
         dis = Hand.disprove(gamecode, character, weapon, location)
 
         message = f"{username} has suggested: {character}, {location}, {weapon}"
-        emit("message_chat", {"message": message}, to=gamecode)
+        # emit("message_chat", {"message": message}, to=gamecode)
+        emit("message_chat", {"message": message})
 
         if dis is None:
             message = f"{username} was disproven by {dis}"
         else:
             message = f"{username} was not disproven"
 
-        emit("message_chat", {"message": message}, to=gamecode)
+        # emit("message_chat", {"message": message}, to=gamecode)
+        emit("message_chat", {"message": message})
 
         emitState(gamecode)
 
@@ -249,7 +256,8 @@ def action_accuse(data):
         gamecode = Game.query.filter_by(id=User.getGid(username)).first()
 
         message = f"{username} has accused: {character}, {location}, {weapon}"
-        emit("message_chat", {"message": message}, to=gamecode)
+        # emit("message_chat", {"message": message}, to=gamecode)
+        emit("message_chat", {"message": message})
 
         PlayerInfo.movePlayer(gamecode, location, character=character)
         WeaponLocation.moveWeapon(gamecode, weapon, location)
@@ -260,13 +268,16 @@ def action_accuse(data):
 
         if correct:
             message = f"{username} has guessed successfully!"
-            emit("message_chat", {"message": message}, to=gamecode)
+            #  emit("message_chat", {"message": message}, to=gamecode)
+            emit("message_chat", {"message": message})
             Winner.addWinner(username, gamecode)
-            emit("game_over", {}, to=gamecode)
+            # emit("game_over", {}, to=gamecode)
+            emit("game_over", {})
         else:
             PlayerInfo.setEliminated(gamecode, username)
             message = f"{username} has guessed incorrectly and has been eliminated!"
-            emit("message_chat", {"message": message}, to=gamecode)
+            # emit("message_chat", {"message": message}, to=gamecode)
+            emit("message_chat", {"message": message})
             emitTurnInfo(gamecode)   
 
     except Exception as e:

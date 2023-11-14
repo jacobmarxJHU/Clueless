@@ -11,10 +11,8 @@ import {
   InputLabel,
   Grid,
 } from '@material-ui/core';
-import { SocketContext } from './GameLayout';
 
 const useStyles = makeStyles((theme) => ({
-  // ...other styles
   modal: {
     display: 'flex',
     alignItems: 'center',

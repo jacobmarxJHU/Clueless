@@ -265,7 +265,7 @@ class Hand(db.Model):
                 card = db.session.get(Card, h.cardId)
                 hList.append(card.getItem())
 
-            outDict[pi[1]] = {"session": pi[2], "hand": hList}
+            outDict[pi[1]] = hList
         
         return outDict
 

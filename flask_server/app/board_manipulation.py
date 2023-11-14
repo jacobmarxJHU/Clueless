@@ -38,12 +38,10 @@ def initialize_board(gamecode: str):
     
     # GETTING INFO TO BE PASSED TO USER
     startingUser = PlayerOrder.getStart(gamecode)
-    hands = Hand.retrieveHand(gamecode)
-    print(hands)
 
     # PASSING GAME STATE TO FRONT END
     emitState(gamecode)
-    emitHands(hands)
+    emitHands(gamecode)
     
     # PASSING PLAYER THAT IS STARTING THE GAME
     emitTurnInfo(gamecode, startingUser)
@@ -62,16 +60,11 @@ def emitTurnInfo(gamecode: str, username: str = None):
     emit("start_turn", emitPackage, to=gamecode)
 
 
-def emitHands(hands: dict):
-
-    for user in hands:
-        subDict = hands[user]
-        uSesh = subDict["session"]
-        hand = subDict["hand"]
-        print(hand)
-
-        #TODO: Emit to single player; I think this should work
-        emit("pop_hand", hand, to=uSesh)
+def emitHands(gamecode):
+    hands = Hand.retrieveHand(gamecode)
+    
+    #TODO: Emit to single player; I think this should work
+    emit("pop_hand", hands, to=gamecode)
 
 
 def emitState(gamecode: str):

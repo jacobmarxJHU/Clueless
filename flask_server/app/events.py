@@ -1,6 +1,6 @@
 from flask import request
 from flask_socketio import emit, join_room
-from .models import User, Game, db, PlayerInfo, Winner, WeaponLocation, Location, Weapon, Guess, Solution, Hand
+from .models import User, Game, db, Path, PlayerInfo, Character, Winner, WeaponLocation, Location, Weapon, Guess, Solution, Hand, PlayerOrder
 from .board_manipulation import initialize_board, emitTurnInfo, emitState
 import json
 from .utility import commit_changes
@@ -175,16 +175,33 @@ def action_move(data):
     """
     # Get game information
     username = data["username"]
-    location = data['location']
+    location = data['new_loc']
     gid = User.getGid(username)
-    gamecode = db.session.get(Game, gid)
+    gamecode = db.session.get(Game, gid).gameCode
     PlayerInfo.movePlayer(gamecode, location, username=username)
     emitState(gamecode)
 
     # Create message and emit message to summarize action
-    message = f"{data['username']} moved to {data['location']}"
+    message = f"{username} moved to {location}"
     emit("message_chat", {"message": message}, to=gamecode)
 
+@socketio.on('get_paths')
+def get_paths(data):
+    username = data['username']
+    gamecode = Game.getGamecode_username(username)
+    paths = Path.findConnected(gamecode, username)
+    sid = request.sid
+
+    emit("receive_paths", {"paths": paths}, to=sid)
+
+
+@socketio.on('get_characters')
+def get_characters(data):
+    emit('receive_characters', {"characters": Character.getAllCharacters()}, to=request.sid)
+
+@socketio.on('get_weapons')
+def get_weapons(data):
+    emit("receive_weapons", {"weapons": Weapon.getAllWeapons()}, to=request.sid)
 
 @socketio.on('action_suggestion')
 def action_suggestion(data):
@@ -245,8 +262,8 @@ def action_accuse(data):
         username = data['username']
         character = data['character']
         weapon = data['weapon']
-        location = data['room']
         gamecode = Game.query.filter_by(id=User.getGid(username)).first()
+        location = PlayerInfo.getPlayerLocation(gamecode, username)
 
         message = f"{username} has accused: {character}, {location}, {weapon}"
         emit("message_chat", {"message": message}, to=gamecode)
@@ -264,10 +281,20 @@ def action_accuse(data):
             Winner.addWinner(username, gamecode)
             emit("game_over", {}, to=gamecode)
         else:
-            PlayerInfo.setEliminated(gamecode, username)
+            PlayerOrder.setEliminated(gamecode, username)
             message = f"{username} has guessed incorrectly and has been eliminated!"
             emit("message_chat", {"message": message}, to=gamecode)
-            emitTurnInfo(gamecode)   
+
+            count = PlayerOrder.countLeft(gamecode)
+
+            if count > 1:
+                emitTurnInfo(gamecode)
+            else:
+                last = PlayerOrder.getLast(gamecode)
+                message = f"{last} is the last player remaining!"
+                emit("message_chat", {"message": message}, to=gamecode)
+                Winner.addWinner(username, gamecode)
+                emit("game_over", {}, to=gamecode)
 
     except Exception as e:
         # Log and emit the error

@@ -47,9 +47,9 @@ const PlayerActions = ({ gameCode, socket, username }) => {
   const [weapon, setWeapon] = useState('');
   const [path, setPath] = useState('');
 
-  // Temp dropdown data
-  const characters = ['Miss Scarlet', 'Prof. Plum', 'Mrs. Peacock'];
-  const weapons = ['Candlestick', 'Dagger', 'Lead Pipe'];
+  // Character and Weapon dropdown data
+  const characters = ['Miss Scarlet', 'Colonel Mustard', 'Mrs. White', 'Mr. Green', 'Mrs. Peacock', 'Professor Plum'];
+  const weapons = ['Candlestick', 'Knife', 'Lead Pipe', 'Revolver', 'Rope', 'Wrench'];
   const paths = ['Hallway', 'Study', 'Lounge'];
 
   // Handler function to set a new path

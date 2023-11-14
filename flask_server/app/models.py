@@ -454,8 +454,23 @@ class PlayerInfo(db.Model):
         ).add_columns(Location.locationName).first()[1]
 
     @classmethod
-    def movePlayer(cls):
-        pass
+    def movePlayer(cls, gamecode, newLocation, character=None, username=None):
+
+        gid = Game.getGameId(gamecode)
+        nlid = Location.getLocId(newLocation)
+
+        if character is not None:
+            cid = Character.getCharacterId(character)
+            pi = PlayerInfo.query.filter_by(gameId=gid, characterId=cid).first()
+        elif username is not None:
+            uid = User.getUserId(username)
+            pi = PlayerInfo.query.filter_by(gameId=gid, playerId=uid).first()
+        else:
+            raise("PlayerInfo.movePlayer -> No character or user identifier")
+        
+        pi.locationId = nlid
+        commit_changes()
+        return
 
     def __repr__(self) -> str:
 

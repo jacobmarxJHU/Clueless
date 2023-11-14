@@ -1,6 +1,6 @@
 from app import db
 from .models import (
-    Game, PlayerOrder, WeaponLocation, Path, Hand, PlayerInfo, Solution
+    Game, PlayerOrder, WeaponLocation, Path, Hand, PlayerInfo, Solution, User, Character
 )
 import random
 import json
@@ -61,11 +61,27 @@ def emitTurnInfo(gamecode: str, username: str = None):
 
 
 def emitHands(gamecode):
+    # Get hands for each player in game
     hands = Hand.retrieveHand(gamecode)
-    
+
+    # Get character names for each player in game
+    char_names = {}
+    game = Game.query.filter_by(gameCode=gamecode).first()
+    player_ids = PlayerInfo.query.filter_by(gameId=game.id).join(
+        User, User.id == PlayerInfo.playerId).join(
+        Character, Character.id == PlayerInfo.characterId).add_columns(
+        User.username, Character.character).all()
+
+    for p in player_ids:
+        # username: character name
+        char_names[p[1]] = p[2]
+
+    # Add character assignments to hands dictionary
+    hands["Characters"] = char_names
+
     #TODO: Emit to single player; I think this should work
     # emit("pop_hand", hands, to=gamecode)
-    print('Here are the hands: ')
+    print('Here are the hands and character names: ')
     print(hands)
     emit("pop_hand", hands)
 

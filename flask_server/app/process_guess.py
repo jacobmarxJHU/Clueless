@@ -10,6 +10,7 @@ import random
 import json
 from .utility import commit_changes
 from .extensions import socketio
+from flask_socketio import emit
 
 
 def disprove_suggestion(gamecode: str):
@@ -43,7 +44,7 @@ def disprove_suggestion(gamecode: str):
 
         message = f"{active_player.username}'s suggestion could not be disproven."
         # socketio.emit("suggestion_result", message, to=gamecode)
-        socketio.emit("suggestion_result", message)
+        emit("suggestion_result", message)
         return
 
     # TODO: Possible last resort disprove where we just find the card that disproves from collection of all cards
@@ -96,7 +97,7 @@ def disprove_suggestion(gamecode: str):
 
                 # Emit disproving details
                 message = f"{disprove_username} has disproven your suggestion with their {disprove_card_name} card."
-                socketio.emit("suggestion_result", message, to=active_player.username)
+                emit("suggestion_result", message, to=active_player.username)
                 return
 
 

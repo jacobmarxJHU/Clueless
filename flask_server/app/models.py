@@ -572,10 +572,23 @@ class PlayerOrder(db.Model):
 
         poNext = PlayerOrder.query.filter_by(gameId=game.id, turn=nextTurn).join(User, User.id==PlayerOrder.playerId).add_columns(User.username).first()
 
+        # If the next player doesn't exist, reset to the first turn
         if not poNext:
             nextTurn = 1
-            poNext = PlayerOrder.query.filter_by(gameId=game.id, turn=nextTurn).join(User, User.id==PlayerOrder.playerId).add_columns(User.username).first()
 
+        # Loop to find the next player who is not eliminated
+        while True:
+            poNext = PlayerOrder.query.filter_by(gameId=game.id, turn=nextTurn).join(User, User.id == PlayerOrder.playerId).add_columns(User.username, PlayerOrder.isEliminated).first()
+
+            # If poNext is None, it means we have reached the end of the order, so start from the beginning
+            if not poNext:
+                nextTurn = 1
+            elif not poNext.isEliminated:
+                break
+            else:
+                nextTurn += 1
+
+        # Assign new active turn
         poCurrent.activeTurn = False
         poNext[0].activeTurn = True
 

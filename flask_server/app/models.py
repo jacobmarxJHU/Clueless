@@ -346,10 +346,11 @@ class Path(db.Model):
     def findConnected(cls, gamecode: str, username: str):
         uid = User.query.filter_by(username=username).first().id
         gid = Game.query.filter_by(gameCode=gamecode).first().id
-        loc = PlayerInfo.query.filter_by(playerId=uid, gameId=gid).first()
+        loc = PlayerInfo.query.filter_by(playerId=uid, gameId=gid).join(
+            Location, Location.id==PlayerInfo.locationId).add_columns(Location.isRoom).first()
 
-        currLoc = loc.id
-        room = loc.isRoom
+        currLoc = loc[0].locationId
+        room = loc[1]
 
         paths1 = Path.query.filter_by(locationId1=currLoc).join(
             Location, Location.id==Path.locationId2).add_columns(
@@ -360,13 +361,23 @@ class Path(db.Model):
         
         newLocs = []
 
-        if paths2:
+        if paths1:
+            print("paths2")
             for p in paths1:
-                newLocs.append(p[1])
+                if p[0].isSecret:
+                    secretPath = p[1] + " (Secret Path)"
+                    newLocs.append(secretPath)
+                else:
+                    newLocs.append(p[1])
 
         if paths2:
+            print("paths1")
             for p in paths2:
-                newLocs.append(p[1])
+                if p[0].isSecret:
+                    secretPath = p[1] + " (Secret Path)"
+                    newLocs.append(secretPath)
+                else:
+                    newLocs.append(p[1])
 
         pathInfo = {"inRoom": room, 'locations': newLocs}
         
@@ -767,6 +778,19 @@ class WeaponLocation(db.Model):
             weaponState[wl[1]] =  wl[2]
         
         return weaponState
+
+    @classmethod
+    def moveWeapon(cls, gamecode, weapon, newLocation):
+        lid = Location.getLocId(newLocation)
+        wid = Weapon.getWeaponId(weapon)
+        gid = Game.getGameId(gamecode)
+
+        if not Location.checkIsRoom(lid=lid):
+            raise("WeaponLocation.moveWeapon -> Trying to move a weapon to a hallway")
+
+        wl = WeaponLocation.query.filter_by(gameId=gid, weapondId=wid).first()
+        wl.locationId = lid
+        commit_changes()
 
     def __repr__(self) -> str:
         

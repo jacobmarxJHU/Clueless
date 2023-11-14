@@ -1,7 +1,7 @@
 from flask import request
 from flask_socketio import emit, join_room
-from .models import User, Game, db, PlayerInfo, Path, Location, Character, Weapon, Guess, Solution, Hand
-from .board_manipulation import initialize_board
+from .models import User, Game, db, PlayerInfo, Path, Location, Character, Weapon, Guess, PlayerOrder, Solution, Hand
+from .board_manipulation import initialize_board, emitTurnInfo
 import json
 from .utility import commit_changes
 from .gameplay import next_turn
@@ -149,12 +149,12 @@ def start_game(data):
     try:
         # Perform game start functions.
         # TODO: Add all necessary functions
-        gameState = initialize_board(game_id)
+        initialized_board = initialize_board(game_id)
         print('emit!')
-        #emit('game_started', initialized_board)
+        emit('game_started', initialized_board)
         
         # Acknowledge the client that the event was received and handled
-        return {'status': 'Game started', 'board': None}
+        return {'status': 'Game started', 'board': initialized_board}
     except ValueError as e:
         emit('error', {'message': str(e)})
          # If there was an error, acknowledge that as well
@@ -279,5 +279,6 @@ def action_turnEnd(data):
 
     # Get game code and invoke next turn
     game_code = data["gamecode"]
-    next_turn(game_code)
+    emitTurnInfo(game_code)
+    
 

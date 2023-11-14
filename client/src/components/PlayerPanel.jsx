@@ -18,17 +18,16 @@ const useStyles = makeStyles((theme) => ({
     width: '100%',
     margin: `${theme.spacing(1)}px 0`, // Space above and below the divider
   },
-  // You might need to adjust the PlayerHand and PlayerActions styles if they are not aligned properly
 }));
 
-const PlayerPanel = ({ username, userHand, gameCode, socket }) => {
+const PlayerPanel = ({ username, gameCode, socket }) => {
   const classes = useStyles();
 
   return (
     <Paper className={classes.root} elevation={2}>
       <PlayerActions gameCode={gameCode} socket={socket} username={username} />
       <Divider className={classes.divider} />
-      <PlayerHand userHand={userHand} />
+      <PlayerHand socket={socket} username={username} />
       <Typography variant="body2">Game Code: {gameCode}</Typography>
     </Paper>
   );

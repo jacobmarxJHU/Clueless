@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Paper,
   Typography,
@@ -42,10 +42,30 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const PlayerHand = ({ userHand }) => {
+const PlayerHand = ({ socket, username }) => {
   const classes = useStyles();
+  const [userHand, setUserHand] = useState([]); // State to hold the user's hand
+
   // Replace with the actual character from user's game state
-  const userCharacter = 'Miss Scarlet';
+  const userCharacter = 'GET MY CHARACTER';
+
+  useEffect(() => {
+    // Listen for the 'pop_hand' event from the server
+    if (socket) {
+      socket.on('pop_hand', (hands) => {
+        // Update the user's hand based on the username
+        const newUserHand = hands[username];
+        if (newUserHand) {
+          setUserHand(newUserHand);
+        }
+      });
+
+      // Clean up the listener when the component unmounts
+      return () => {
+        socket.off('pop_hand');
+      };
+    }
+  }, [socket, username]); // Dependencies
 
   return (
     <Paper className={classes.root} elevation={3}>

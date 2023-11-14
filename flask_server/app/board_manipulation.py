@@ -65,6 +65,8 @@ def emitHands(gamecode):
     
     #TODO: Emit to single player; I think this should work
     # emit("pop_hand", hands, to=gamecode)
+    print('Here are the hands: ')
+    print(hands)
     emit("pop_hand", hands)
 
 

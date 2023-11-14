@@ -6,6 +6,7 @@ import random
 import json
 from .utility import commit_changes
 from .extensions import socketio
+from flask_socketio import emit
 
 
 # Master initialize board function to pass initialized game state to front end
@@ -58,7 +59,7 @@ def emitTurnInfo(gamecode: str, username: str = None):
     emitPackage = {username: paths}
     print(emitPackage)
 
-    # emit("start_turn", emitPackage, to=gamecode)
+    emit("start_turn", emitPackage, to=gamecode)
 
 
 def emitHands(hands: dict):
@@ -70,13 +71,13 @@ def emitHands(hands: dict):
         print(hand)
 
         #TODO: Emit to single player; I think this should work
-        socketio.emit("pop_hand", hand, to=uSesh)
+        emit("pop_hand", hand, to=uSesh)
 
 
 def emitState(gamecode: str):
     state = generateGameState(gamecode)
     print(state)
-    #emit("pop_locations", state, to:gamecode)
+    emit("pop_locations", state, to=gamecode)
 
 
 def generateGameState(gamecode):

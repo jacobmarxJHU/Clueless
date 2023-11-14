@@ -1,7 +1,7 @@
 from flask import request
 from flask_socketio import emit, join_room
-from .models import User, Game, db, PlayerInfo, WeaponLocation, Location, Weapon, Guess, Solution, Hand
-from .board_manipulation import initialize_board, emitTurnInfo
+from .models import User, Game, db, PlayerInfo, Winner, WeaponLocation, Location, Weapon, Guess, Solution, Hand
+from .board_manipulation import initialize_board, emitTurnInfo, emitState
 import json
 from .utility import commit_changes
 from .gameplay import next_turn
@@ -170,22 +170,16 @@ def action_move(data):
     :return none
     """
     # Get game information
-    game_id = User.query.filter_by(username=data["username"]).first().activeGame
-    game = Game.query.filter_by(id=game_id).first()
-
-    # Get location ID to add to PlayerInfo
-    location_id = Location.query.filter_by(locationName=data["location"]).first().id
-
-    # Get player info record
-    player_info = PlayerInfo.query.filter_by(username=data["username"]).first()
-
-    # Update and commit player info with new location
-    player_info.locationId = location_id
-    commit_changes()
+    username = data["username"]
+    location = data['location']
+    gid = User.getGid(username)
+    gamecode = db.session.get(Game, gid)
+    PlayerInfo.movePlayer(gamecode, location, username=username)
+    emitState(gamecode)
 
     # Create message and emit message to summarize action
     message = f"{data['username']} moved to {data['location']}"
-    emit("message_chat", {"message": message}, to=game.gameCode)
+    emit("message_chat", {"message": message}, to=gamecode)
 
 
 @socketio.on('action_suggestion')
@@ -221,6 +215,8 @@ def action_suggestion(data):
 
         emit("message_chat", {"message": message}, to=gamecode)
 
+        emitState(gamecode)
+
     except Exception as e:
         # Log and emit the error
         db.session.rollback()
@@ -242,24 +238,32 @@ def action_accuse(data):
     # TODO: If we got suggestion/accusation specifier from the front-end in the json object we could consolidate this
     #   with the action_suggestion function
     try:
-        # Get player and game IDs
-        user = User.query.filter_by(username=data["username"]).first()
-        if not user:
-            raise ValueError("User not found")
+        username = data['username']
+        character = data['character']
+        weapon = data['weapon']
+        location = data['room']
+        gamecode = Game.query.filter_by(id=User.getGid(username)).first()
 
-        player_id = user.id
-        game_id = user.activeGame
+        message = f"{username} has accused: {character}, {location}, {weapon}"
+        emit("message_chat", {"message": message}, to=gamecode)
 
-        # Get game info for message
-        game = Game.query.filter_by(id=game_id).first()
+        PlayerInfo.movePlayer(gamecode, location, character=character)
+        WeaponLocation.moveWeapon(gamecode, weapon, location)
 
-        Guess.addGuess(game.gameCode, data["username"], data['room'], data['character'], data['weapon'])
+        Guess.addGuess(gamecode, username, location, character, weapon)
+        correct = Solution.checkSol(gamecode, location, weapon, character)
+        emitState(gamecode)
 
-        # Create message and emit message to summarize action
-        message = f"{data['username']} has accused: {data['character']}, {data['room']}, {data['weapon']}"
-        emit("message_chat", {"message": message}, to=game.gameCode)
-
-
+        if correct:
+            message = f"{username} has guessed successfully!"
+            emit("message_chat", {"message": message}, to=gamecode)
+            Winner.addWinner(username, gamecode)
+            emit("game_over", {}, to=gamecode)
+        else:
+            PlayerInfo.setEliminated(gamecode, username)
+            message = f"{username} has guessed incorrectly and has been eliminated!"
+            emit("message_chat", {"message": message}, to=gamecode)
+            emitTurnInfo(gamecode)   
 
     except Exception as e:
         # Log and emit the error

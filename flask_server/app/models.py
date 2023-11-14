@@ -454,6 +454,12 @@ class PlayerInfo(db.Model):
         ).add_columns(Location.locationName).first()[1]
 
     @classmethod
+    def setEliminated(cls, gamecode, username):
+        pi = PlayerInfo.query.filter_by(gameId=Game.getGameId(gamecode), playerId=User.getUserId(username)).first()
+        pi.isEliminated = True
+        commit_changes()
+
+    @classmethod
     def movePlayer(cls, gamecode, newLocation, character=None, username=None):
 
         gid = Game.getGameId(gamecode)
@@ -733,6 +739,9 @@ class User(db.Model):
     def getSess(cls, username):
         return User.query.filter_by(username=username).first().sessionInfo
 
+    @classmethod
+    def getGid(cls, username):
+        return User.query.filter_by(username=username).first().activeGame
 
     def __repr__(self):
         return f"<User id: {self.id}, username: {self.username}, playerStatus: {self.playerStatus}, playerCode: {self.playerCode}, sessionInfo: {self.sessionInfo}, activeGame: {self.activeGame}>"
@@ -830,3 +839,9 @@ class Winner(db.Model):
     id = Column(Integer, primary_key=True)
     playerId = Column(Integer, ForeignKey('cs.Users.id'), nullable=False)
     gameId = Column(Integer, ForeignKey('cs.Games.id'), nullable=False, unique=True)
+
+    @classmethod
+    def addWinner(username, gamecode):
+        win = Winner(User.getUserId(username), Game.getGameId(gamecode))
+        db.session.add(win)
+        commit_changes()

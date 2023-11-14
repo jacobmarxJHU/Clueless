@@ -2,18 +2,6 @@ import React from 'react';
 import { useParams, useLocation } from 'react-router-dom';
 import GameLayout from '../components/GameLayout';
 
-// Mock data for the player's hand
-const mockPlayerHand = ['Candlestick', 'Kitchen', 'Mrs. White'];
-
-// Mock data for chat messages
-const mockChatMessages = [
-  'Miss Scarlet has joined the game.',
-  'Prof. Plum moved to the Study.',
-  'Miss Scarlet suggested it was Col. Mustard, with the Rope, in the Library.',
-  'Prof. Plum was unable to disprove the suggestion.',
-  // ... other updates
-];
-
 const GamePage = () => {
   const { gameCode } = useParams(); // This will get the gameCode from the URL
   const location = useLocation(); // This will allow you to access the routing state
@@ -30,8 +18,6 @@ const GamePage = () => {
         gameCode={gameCode} // Pass the gameCode from the URL
         username={username} // Pass the username from the routing state
         isLeader={isLeader} // Pass the isLeader sstatus from the routing state
-        chatMessages={mockChatMessages}
-        userHand={mockPlayerHand}
       />
     </div>
   );

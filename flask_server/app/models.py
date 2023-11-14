@@ -453,6 +453,10 @@ class PlayerInfo(db.Model):
             Location, Location.id==PlayerInfo.locationId
         ).add_columns(Location.locationName).first()[1]
 
+    @classmethod
+    def movePlayer(cls):
+        pass
+
     def __repr__(self) -> str:
 
         user = User.query.filter_by(id=self.playerId).first()

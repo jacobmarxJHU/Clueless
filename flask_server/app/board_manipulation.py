@@ -1,6 +1,6 @@
 from app import db
 from .models import (
-    Game, PlayerOrder, WeaponLocation, Path, Hand, PlayerInfo, Solution, Weapon, Character, Location
+    Game, PlayerOrder, WeaponLocation, Path, Hand, PlayerInfo, Solution
 )
 import random
 import json
@@ -85,35 +85,5 @@ def generateGameState(gamecode):
     weaponState = WeaponLocation.getWeaponState(gamecode)
     
     return {"userState": playerState, "weaponState": weaponState}
-
-
-def dropdown_emit(gamecode: str):
-    """
-    This function emits a json object for the dropdown menus.
-    """
-
-    # Get all weapons, characters, and locations
-    weapons = Weapon.query.all()
-    characters = Character.query.all()
-    rooms = Location.query.filter_by(isRoom=True).all()
-
-    # Create lists to return
-    # Create lists to return
-    weapon_list = [weapon.weaponName for weapon in weapons]
-    character_list = [character.character for character in characters]
-    room_list = [room.locationName for room in rooms]
-
-    dropdown_dict = {
-        "Weapons": weapon_list,
-        "Characters": character_list,
-        "Rooms": room_list
-    }
-
-    dropdown_json = json.dumps(dropdown_dict)
-
-    socketio.emit("dropdown_emit", dropdown_json, to=gamecode)
-
-
-
 
 

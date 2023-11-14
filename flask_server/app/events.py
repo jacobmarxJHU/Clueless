@@ -287,7 +287,6 @@ def action_accuse(data):
         # Add and commit new Guess entry
         db.session.add(new_guess)
         commit_changes()
-
         """
         # Get game info for message
         game = Game.query.filter_by(id=game_id).first()
@@ -298,8 +297,7 @@ def action_accuse(data):
         message = f"{data['username']} has accused: {data['character']}, {data['room']}, {data['weapon']}"
         emit("message_chat", {"message": message}, to=game.gameCode)
 
-        # compare to solution
-        isCorrect = Solution.checkSol(game.gameCode, )
+        
 
     except Exception as e:
         # Log and emit the error

@@ -25,6 +25,16 @@ class Character(db.Model):
     @classmethod
     def getCharacterId(cls, cName):
         return Character.query.filter_by(character=cName).first().id
+    
+    @classmethod
+    def getAllCharacters(cls):
+
+        out = []
+        chars = Character.query.all()
+        for c in chars:
+            out.append(c.character)
+        
+        return out
 
     def __repr__(self):
         return '<Character {}>'.format(self.character)
@@ -500,6 +510,7 @@ class PlayerOrder(db.Model):
     playerId = Column(Integer, ForeignKey('cs.Users.id'), nullable=False)
     turn = Column(Integer, default=-1, nullable=False)
     activeTurn = Column(Boolean, default=False, nullable=False)
+    isEliminated = Column(Boolean, default=False)
 
     @classmethod
     def generate(cls, gamecode: str):
@@ -561,16 +572,48 @@ class PlayerOrder(db.Model):
 
         poNext = PlayerOrder.query.filter_by(gameId=game.id, turn=nextTurn).join(User, User.id==PlayerOrder.playerId).add_columns(User.username).first()
 
+        # If the next player doesn't exist, reset to the first turn
         if not poNext:
             nextTurn = 1
-            poNext = PlayerOrder.query.filter_by(gameId=game.id, turn=nextTurn).join(User, User.id==PlayerOrder.playerId).add_columns(User.username).first()
 
+        # Loop to find the next player who is not eliminated
+        while True:
+            poNext = PlayerOrder.query.filter_by(gameId=game.id, turn=nextTurn).join(User, User.id == PlayerOrder.playerId).add_columns(User.username, PlayerOrder.isEliminated).first()
+
+            # If poNext is None, it means we have reached the end of the order, so start from the beginning
+            if not poNext:
+                nextTurn = 1
+            elif not poNext.isEliminated:
+                break
+            else:
+                nextTurn += 1
+
+        # Assign new active turn
         poCurrent.activeTurn = False
         poNext[0].activeTurn = True
 
         commit_changes()
 
         return poNext[1]
+    
+    @classmethod
+    def setEliminated(cls, gamecode, username):
+        po = PlayerOrder.query.filter_by(gameId=Game.getGameId(gamecode), playerId=User.getUserId(username)).first()
+        po.isEliminated = True
+        commit_changes()
+
+    @classmethod
+    def getLast(cls, gamecode):
+        last = PlayerOrder.query.filter_by(gameId=Game.getGameId(gamecode), isEliminated=False).join(
+            User, User.id==PlayerOrder.playerId).add_columns(User.username).first()
+
+        return last[1]
+
+    @classmethod
+    def countLeft(cls, gamecode):
+        count = PlayerOrder.query.filter_by(gameId=Game.getGameId(gamecode), isEliminated=False).count()
+
+        return count
 
     def __repr__(self) -> str:
 
@@ -758,6 +801,17 @@ class Weapon(db.Model):
     @classmethod
     def getWeaponId(cls, wName):
         return Weapon.query.filter_by(weaponName=wName).first().id
+
+    @classmethod
+    def getAllWeapons(cls):
+
+        out = []
+        weps = Weapon.query.all()
+        for w in weps:
+            out.append(w.weaponName)
+        
+        return out
+
 
     def __repr__(self) -> str:
         return f"<Weapon {self.weaponName}>" 

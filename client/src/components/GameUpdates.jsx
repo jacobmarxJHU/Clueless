@@ -31,18 +31,22 @@ const GameUpdates = ({ socket }) => {
   const [messages, setMessages] = useState([]);
 
   useEffect(() => {
-    // Setup the `message_chat` event listener
-    const handleNewMessage = (data) => {
-      setMessages((prevMessages) => [...prevMessages, data.message]);
-    };
+    console.log('Received socket in GameUpdates.jsx:', socket);
+    // Set up the listener if the socket instance is not null
+    if (socket) {
+      const handleNewMessage = (data) => {
+        setMessages((prevMessages) => [...prevMessages, data.message]);
+      };
 
-    socket.on('message_chat', handleNewMessage);
+      socket.on('message_chat', handleNewMessage);
 
-    // Clean up the event listener
-    return () => {
-      socket.off('message_chat', handleNewMessage);
-    };
-  }, [socket]);
+      // Clean up the event listener when the component unmounts
+      // or if the socket instance changes
+      return () => {
+        socket.off('message_chat', handleNewMessage);
+      };
+    }
+  }, [socket]); // Only re-run the effect if the socket instance changes
 
   return (
     <Paper className={classes.updatesBox}>

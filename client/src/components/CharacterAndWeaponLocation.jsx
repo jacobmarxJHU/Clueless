@@ -60,21 +60,25 @@ const CharacterAndWeaponLocation = ({ socket }) => {
   const [weaponData, setWeaponState] = useState([]);
   
   useEffect(() => {
+    console.log('Received socket in CharacterAndWeaponLocation.jsx:', socket);
     // Set up socket event listener for pop_locations
-    socket.on('pop_locations', (data) => {
-      const newUserState = data.userState;
-      const newWeaponState = data.weaponState;
+    if (socket) {
+      socket.on('pop_locations', (data) => {
+        const newUserState = data.userState;
+        const newWeaponState = data.weaponState;
+  
+        // Update your local state with the new data
+        setUserState(newUserState);
+        setWeaponState(newWeaponState);
+      });
 
-      // Update your local state with the new data
-      setUserState(newUserState);
-      setWeaponState(newWeaponState);
-    });
-
-    // Clean up the listener when the component unmounts
-    return () => {
-      socket.off('pop_locations');
-    };
-  }, [socket]);
+      // Clean up the event listener when the component unmounts
+      // or if the socket instance changes
+      return () => {
+        socket.off('pop_locations');
+      };
+    }
+  }, [socket]); // Only re-run the effect if the socket instance changes
 
   // Map userState to table rows for characters
   const characterRows = Object.entries(characterData).map(([username, details]) => ({

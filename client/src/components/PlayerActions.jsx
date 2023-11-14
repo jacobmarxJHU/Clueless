@@ -63,6 +63,14 @@ const PlayerActions = () => {
         >
           Make an Accusation
         </Button>
+        <Button
+          variant="contained"
+          color="default"
+          className={classes.button}
+          onClick={handleAccusation}
+        >
+          End Turn
+        </Button>
       </div>
     </Paper>
   );

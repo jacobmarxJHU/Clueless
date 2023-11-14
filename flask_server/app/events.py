@@ -1,6 +1,6 @@
 from flask import request
 from flask_socketio import emit, join_room
-from .models import User, Game, db, PlayerInfo, Path, Location, Character, Weapon, Guess, PlayerOrder, Solution, Hand
+from .models import User, Game, db, PlayerInfo, WeaponLocation, Location, Weapon, Guess, Solution, Hand
 from .board_manipulation import initialize_board, emitTurnInfo
 import json
 from .utility import commit_changes
@@ -206,6 +206,8 @@ def action_suggestion(data):
         character = data['character']
 
         Guess.addGuess(gamecode, username, location, character, weapon)
+        PlayerInfo.movePlayer(gamecode, location, character=character)
+        WeaponLocation.moveWeapon(gamecode, weapon, location)
 
         dis = Hand.disprove(gamecode, character, weapon, location)
 

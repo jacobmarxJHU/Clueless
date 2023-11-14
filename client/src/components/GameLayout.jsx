@@ -112,7 +112,7 @@ const GameLayout = ({ username, gameCode, isLeader, chatMessages, userHand }) =>
       <Grid container className={classes.playerSection} justifyContent="center">
         {/* The PlayerPanel now takes up the full width of the row */}
         <Grid item xs={12}>
-          <PlayerPanel userHand={userHand} gameCode={gameCode} />
+          <PlayerPanel username={username} userHand={userHand} gameCode={gameCode} socket={socketInstance} />
         </Grid>
       </Grid>
     </Container>

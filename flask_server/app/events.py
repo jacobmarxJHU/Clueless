@@ -1,6 +1,6 @@
 from flask import request
 from flask_socketio import emit, join_room
-from .models import User, Game, db, PlayerInfo, Path, Location, Character, Weapon, Guess, Solution
+from .models import User, Game, db, PlayerInfo, Path, Location, Character, Weapon, Guess, Solution, Hand
 from .board_manipulation import initialize_board
 import json
 from .utility import commit_changes
@@ -149,12 +149,12 @@ def start_game(data):
     try:
         # Perform game start functions.
         # TODO: Add all necessary functions
-        initialized_board = initialize_board(game_id)
+        gameState = initialize_board(game_id)
         print('emit!')
-        emit('game_started', initialized_board)
+        #emit('game_started', initialized_board)
         
         # Acknowledge the client that the event was received and handled
-        return {'status': 'Game started', 'board': initialized_board}
+        return {'status': 'Game started', 'board': None}
     except ValueError as e:
         emit('error', {'message': str(e)})
          # If there was an error, acknowledge that as well
@@ -199,42 +199,25 @@ def action_suggestion(data):
 
     try:
         # Get player and game IDs
-        user = User.query.filter_by(username=data["username"]).first()
-        if not user:
-            raise ValueError("User not found")
+        username = data['username']
+        gamecode = Game.getGamecode_username(username)
+        location = PlayerInfo.getPlayerLocation(gamecode, username)
+        weapon = data['weapon']
+        character = data['character']
 
-        player_id = user.id
-        game_id = user.activeGame
+        Guess.addGuess(gamecode, username, location, character, weapon)
 
-        # Validate and get IDs for incoming data
-        character = Character.query.filter_by(characterName=data["character"]).first()
-        weapon = Weapon.query.filter_by(weaponName=data["weapon"]).first()
-        location = Location.query.filter_by(locationName=data["room"]).first()
+        dis = Hand.disprove(gamecode, character, weapon, location)
 
-        if not all([character, weapon, location]):
-            raise ValueError("Character, Weapon, or Location not found")
+        message = f"{username} has suggested: {character}, {location}, {weapon}"
+        emit("message_chat", {"message": message}, to=gamecode)
 
-        character_id = character.id
-        weapon_id = weapon.id
-        location_id = location.id
+        if dis is None:
+            message = f"{username} was disproven by {dis}"
+        else:
+            message = f"{username} was not disproven"
 
-        # Create new Guess entry from suggestion
-        new_guess = Guess(userId=player_id,
-                          gameId=game_id,
-                          characterId=character_id,
-                          weaponId=weapon_id,
-                          locationId=location_id)
-
-        # Add and commit new Guess entry
-        db.session.add(new_guess)
-        commit_changes()
-
-        # Get game info for message
-        game = Game.query.filter_by(id=game_id).first()
-
-        # Create message and emit message to summarize action
-        message = f"{data['username']} has suggested: {data['character']}, {data['room']}, {data['weapon']}"
-        emit("message_chat", {"message": message}, to=game.gameCode)
+        emit("message_chat", {"message": message}, to=gamecode)
 
     except Exception as e:
         # Log and emit the error
@@ -264,30 +247,7 @@ def action_accuse(data):
 
         player_id = user.id
         game_id = user.activeGame
-        """
-        # Validate and get IDs for incoming data
-        character = Character.query.filter_by(characterName=data["character"]).first()
-        weapon = Weapon.query.filter_by(weaponName=data["weapon"]).first()
-        location = Location.query.filter_by(locationName=data["room"]).first()
 
-        if not all([character, weapon, location]):
-            raise ValueError("Character, Weapon, or Location not found")
-
-        character_id = character.id
-        weapon_id = weapon.id
-        location_id = location.id
-
-        # Create new Guess entry from suggestion
-        new_guess = Guess(userId=player_id,
-                          gameId=game_id,
-                          characterId=character_id,
-                          weaponId=weapon_id,
-                          locationId=location_id)
-
-        # Add and commit new Guess entry
-        db.session.add(new_guess)
-        commit_changes()
-        """
         # Get game info for message
         game = Game.query.filter_by(id=game_id).first()
 
@@ -297,7 +257,7 @@ def action_accuse(data):
         message = f"{data['username']} has accused: {data['character']}, {data['room']}, {data['weapon']}"
         emit("message_chat", {"message": message}, to=game.gameCode)
 
-        
+
 
     except Exception as e:
         # Log and emit the error

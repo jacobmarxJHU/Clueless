@@ -151,6 +151,11 @@ class Game(db.Model):
             user_set.append(u.id)
 
         return user_set
+    
+    @classmethod
+    def getGamecode_username(cls, username):
+        return User.query.filter_by(username=username).join(
+            Game, Game.id==User.activeGame).add_columns(Game.gameCode).first()[1]
 
     @classmethod
     def getGameId(cls, gamecode):

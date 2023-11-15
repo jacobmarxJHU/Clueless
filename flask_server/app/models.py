@@ -915,7 +915,7 @@ class Winner(db.Model):
     gameId = Column(Integer, ForeignKey('cs.Games.id'), nullable=False, unique=True)
 
     @classmethod
-    def addWinner(username, gamecode):
+    def addWinner(cls, username, gamecode):
         win = Winner(User.getUserId(username), Game.getGameId(gamecode))
         db.session.add(win)
         commit_changes()

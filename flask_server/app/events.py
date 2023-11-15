@@ -280,44 +280,43 @@ def action_accuse(data):
 
     # TODO: If we got suggestion/accusation specifier from the front-end in the json object we could consolidate this
     #   with the action_suggestion function
-    try:
-        username = data['username']
-        character = data['character']
-        weapon = data['weapon']
-        gamecode = Game.query.filter_by(id=User.getGid(username)).first()
-        location = PlayerInfo.getPlayerLocation(gamecode, username)
+#    try:
+    username = data['username']
+    character = data['character']
+    weapon = data['weapon']
+    gamecode = Game.query.filter_by(id=User.getGid(username)).first().gameCode
+    location = PlayerInfo.getPlayerLocation(gamecode, username)
 
-        message = f"{username} has accused: {character}, {location}, {weapon}"
+    message = f"{username} has accused: {character}, {location}, {weapon}"
+    emit("message_chat", {"message": message}, to=gamecode)
+    #emit("message_chat", {"message": message})
+
+    PlayerInfo.movePlayer(gamecode, location, character=character)
+    WeaponLocation.moveWeapon(gamecode, weapon, location)
+    Guess.addGuess(gamecode, username, location, character, weapon)
+    correct = Solution.checkSol(gamecode, location, weapon, character)
+    emitState(gamecode)
+
+    if correct:
+        message = f"{username} has guessed successfully!"
         emit("message_chat", {"message": message}, to=gamecode)
         #emit("message_chat", {"message": message})
+        Winner.addWinner(username, gamecode)
+        emit("game_over", {}, to=gamecode)
+        #emit("game_over", {})
+    else:
+        PlayerOrder.setEliminated(gamecode, username)
+        message = f"{username} has guessed incorrectly and has been eliminated!"
+        emit("message_chat", {"message": message}, to=gamecode)
+        emitTurnInfo(gamecode)
 
-        PlayerInfo.movePlayer(gamecode, location, character=character)
-        WeaponLocation.moveWeapon(gamecode, weapon, location)
-
-        Guess.addGuess(gamecode, username, location, character, weapon)
-        correct = Solution.checkSol(gamecode, location, weapon, character)
-        emitState(gamecode)
-
-        if correct:
-            message = f"{username} has guessed successfully!"
-            emit("message_chat", {"message": message}, to=gamecode)
-            #emit("message_chat", {"message": message})
-            Winner.addWinner(username, gamecode)
-            emit("game_over", {}, to=gamecode)
-            #emit("game_over", {})
-        else:
-            PlayerOrder.setEliminated(gamecode, username)
-            message = f"{username} has guessed incorrectly and has been eliminated!"
-            emit("message_chat", {"message": message}, to=gamecode)
-            emitTurnInfo(gamecode)   
-
-    except Exception as e:
-        # Log and emit the error
-        db.session.rollback()
-        emit("error_message", {"error": str(e)}, to=gamecode)
-
-        # Print the error
-        print(f"Error in action_suggestion: {e}")
+#    except Exception as e:
+#        # Log and emit the error
+#        db.session.rollback()
+#        emit("error_message", {"error": str(e)}, to=gamecode)
+#
+#        # Print the error
+#        print(f"Error in action_suggestion: {e}")
 
 
 @socketio.on('action_turnEnd')

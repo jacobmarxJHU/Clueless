@@ -335,7 +335,7 @@ def action_turnEnd(data):
     game_code = data["gamecode"]
     username = PlayerOrder.getCurrentUsername(game_code)
 
-    message = f"{username}'s turn has started"
+    message = f"{username}'s turn has ended"
     emit("message_chat", {"message": message}, to=game_code)
 
     emitTurnInfo(game_code)

@@ -245,14 +245,12 @@ def action_suggestion(data):
         Guess.addGuess(gamecode, username, location, character, weapon)
         PlayerInfo.movePlayer(gamecode, location, character=character)
         WeaponLocation.moveWeapon(gamecode, weapon, location)
-
         dis = Hand.disprove(gamecode, character, weapon, location)
-
         message = f"{username} has suggested: {character}, {location}, {weapon}"
         emit("message_chat", {"message": message}, to=gamecode)
         #emit("message_chat", {"message": message})
 
-        if dis is None:
+        if dis:
             message = f"{username} was disproven by {dis}"
         else:
             message = f"{username} was not disproven"

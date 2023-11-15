@@ -282,6 +282,11 @@ class Hand(db.Model):
     @classmethod
     def disprove(cls, gamecode, character, weapon, location):
 
+        print(gamecode)
+        print(location)
+        print(weapon)
+        print(character)
+
         cid = Character.getCharacterId(character)
         wid = Weapon.getWeaponId(weapon)
         lid = Location.getLocId(location)
@@ -481,10 +486,12 @@ class PlayerInfo(db.Model):
         elif username is not None:
             uid = User.getUserId(username)
             pi = PlayerInfo.query.filter_by(gameId=gid, playerId=uid).first()
+            pi.locationId = nlid
         else:
             raise("PlayerInfo.movePlayer -> No character or user identifier")
         
-        pi.locationId = nlid
+        if pi is not None:
+            pi.locationId = nlid
         commit_changes()
         return
 
@@ -867,9 +874,13 @@ class WeaponLocation(db.Model):
         wid = Weapon.getWeaponId(weapon)
         gid = Game.getGameId(gamecode)
 
-        if not Location.checkIsRoom(lid=lid):
-            raise("WeaponLocation.moveWeapon -> Trying to move a weapon to a hallway")
+        print(lid)
+        print(wid)
+        print(gid)
 
+        if not Location.checkIsRoom(lid=lid):
+            print("WeaponLocation.moveWeapon -> Trying to move a weapon to a hallway")
+        
         wl = WeaponLocation.query.filter_by(gameId=gid, weapondId=wid).first()
         wl.locationId = lid
         commit_changes()

@@ -57,7 +57,10 @@ const PlayerActions = ({ gameCode, socket, username }) => {
       socket.on('start_turn', (data) => {
         console.log(data);
         let user = data[username];
-        setPaths(user.locations); // Populate the paths with data from the server
+        if (user !== undefined){
+          setPaths(user.locations); // Populate the paths with data from the server
+        }
+        //setPaths(user.locations); // Populate the paths with data from the server
       });
 
       return () => socket.off('start_turn');

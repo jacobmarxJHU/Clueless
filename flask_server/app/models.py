@@ -916,6 +916,6 @@ class Winner(db.Model):
 
     @classmethod
     def addWinner(cls, username, gamecode):
-        win = Winner(User.getUserId(username), Game.getGameId(gamecode))
+        win = Winner(playerId=User.getUserId(username), gameId=Game.getGameId(gamecode))
         db.session.add(win)
         commit_changes()

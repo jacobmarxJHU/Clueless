@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Paper, Typography, Button, makeStyles } from '@material-ui/core';
 
 const useStyles = makeStyles((theme) => ({
@@ -15,9 +15,11 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const GameStatusBanner = ({ status, isLeader, socket, gameCode }) => {
+const GameStatusBanner = ({ isLeader, socket, gameCode }) => {
   const classes = useStyles();
+  const [status, setStatus] = useState(""); // Initialize with empty string or any default status
 
+  /*
   const handleStartGame = () => {
     // Emit the start_game event with the gameCode in an object
     // and include a callback for the server's acknowledgement
@@ -26,19 +28,39 @@ const GameStatusBanner = ({ status, isLeader, socket, gameCode }) => {
       console.log('Server responded with:', response);
     });
   };
+  */
+
+  useEffect(() => {
+    const handleStartTurn = () => {
+      setStatus("It's your turn!");
+    };
+
+    // Setup the event listener for 'start_turn' event
+    socket?.on('start_turn', handleStartTurn);
+
+    // Return a cleanup function to remove the event listener
+    return () => {
+      socket?.off('start_turn', handleStartTurn);
+    };
+  }, [socket]);
+
+  const handleStartGame = () => {
+    // Emit the 'start_game' event when the button is clicked
+    socket?.emit('start_game', { gameCode: gameCode });
+  };
 
   return (
     <Paper elevation={4} className={classes.banner}>
       <Typography variant="subtitle1"><strong>{status}</strong></Typography>
-      {isLeader && (
+      {isLeader ? (
         <Button
           variant="contained"
           color="primary"
-          className={classes.startButton}
+          className={classes.startButton} 
           onClick={handleStartGame}
-        >
-          Start Game!
-        </Button>
+        >Start Game!</Button>
+      ) : (
+        <Typography variant="subtitle1"><strong>{status}</strong></Typography>
       )}
     </Paper>
   );

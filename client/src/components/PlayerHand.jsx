@@ -52,12 +52,12 @@ const PlayerHand = ({ socket, username }) => {
     if (socket) {
       socket.on('pop_hand', (data) => {
         // Update the user's hand based on the username
-        const newUserHand = data.playerHands[username];
+        const newUserHand = data.playerHands['username'];
         if (newUserHand) {
           setUserHand(newUserHand);
         }
         // Update the user's character based on the username
-        const newUserCharacter = data.playerCharacters[username];
+        const newUserCharacter = data.playerCharacters['username'];
         if (newUserCharacter) {
           setUserCharacter(newUserCharacter);
         }

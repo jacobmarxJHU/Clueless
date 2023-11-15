@@ -21,7 +21,7 @@ const GameStatusBanner = ({ isLeader, socket, gameCode }) => {
   
   useEffect(() => {
     if (socket) {
-      socket.on('start_turn', () => {
+      socket.on('notify_current', () => {
         alert("It's your turn!");
         setGameStatus("It's your turn!");
       });

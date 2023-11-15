@@ -111,11 +111,13 @@ def game_join(data):
     print(f"{username} has joined game {gamecode}")
 
     user.activeGame = game.id
+    user.sessionInfo = request.sid
     game.playerCount = game.playerCount + 1
 
     commit_changes()
 
     print("before join")
+    print(user.sessionInfo)
     print(user)
     print(game)
     join_room(gamecode)
@@ -327,9 +329,15 @@ def action_turnEnd(data):
     :param data: json object with structure {gamecode: gamecode}
     :return: None 
     """
+    print("hello")
 
     # Get game code and invoke next turn
     game_code = data["gamecode"]
+    username = PlayerOrder.getCurrentUsername(game_code)
+
+    message = f"{username}'s turn has started"
+    emit("message_chat", {"message": message}, to=game_code)
+
     emitTurnInfo(game_code)
     
 

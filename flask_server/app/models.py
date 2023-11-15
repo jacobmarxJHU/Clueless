@@ -520,6 +520,11 @@ class PlayerOrder(db.Model):
     isEliminated = Column(Boolean, default=False)
 
     @classmethod
+    def getCurrSid(cls, gamecode):
+        return PlayerOrder.query.filter_by(gameId=Game.getGameId(gamecode), activeTurn=True).join(
+            User, User.id==PlayerOrder.playerId).add_columns(User.sessionInfo).first()[1]
+
+    @classmethod
     def generate(cls, gamecode: str):
         game=Game.query.filter_by(gameCode=gamecode).first()
 
@@ -619,8 +624,12 @@ class PlayerOrder(db.Model):
     @classmethod
     def countLeft(cls, gamecode):
         count = PlayerOrder.query.filter_by(gameId=Game.getGameId(gamecode), isEliminated=False).count()
-
         return count
+    
+    @classmethod
+    def getCurrentUsername(cls, gamecode):
+        return PlayerOrder.query.filter_by(gameId=Game.getGameId(gamecode), activeTurn=True).join(
+            User, User.id==PlayerOrder.playerId).add_columns(User.username).first()[1]
 
     def __repr__(self) -> str:
 

@@ -54,9 +54,18 @@ def emitTurnInfo(gamecode: str, username: str = None):
     paths = Path.findConnected(gamecode, username)
     
     emitPackage = {username: paths}
+    print(paths)
     print(emitPackage)
+    playerSid = PlayerOrder.getCurrSid(gamecode)
 
     emit("start_turn", emitPackage, to=gamecode)
+
+    username = PlayerOrder.getCurrentUsername(gamecode)
+
+    message = f"{username}'s turn has started"
+    emit("message_chat", {"message": message}, to=gamecode)
+
+    emit("notify_current", {}, to=playerSid)
     #emit("start_turn", emitPackage)
 
 

@@ -75,7 +75,7 @@ const GameLayout = ({ username, gameCode, isLeader, chatMessages, userHand }) =>
     setSocket(gameSocket);
 
     // Restore the user session
-    gameSocket.emit("user_join", { username, gameCode });
+    gameSocket.emit("game_join", { username, gameCode });
 
     // Event listeners for socket connection
     gameSocket.on("connect", () => {
@@ -86,7 +86,7 @@ const GameLayout = ({ username, gameCode, isLeader, chatMessages, userHand }) =>
       console.log("Disconnected from socket.io server from GameLayout");
     });
 
-    // Clean up the socket when the component unmounts
+    // Clean up the socket when the component unmounts 
     return () => {
       gameSocket.close();
     };

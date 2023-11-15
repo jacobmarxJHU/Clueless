@@ -56,8 +56,8 @@ def emitTurnInfo(gamecode: str, username: str = None):
     emitPackage = {username: paths}
     print(emitPackage)
 
-    # emit("start_turn", emitPackage, to=gamecode)
-    emit("start_turn", emitPackage)
+    emit("start_turn", emitPackage, to=gamecode)
+    #emit("start_turn", emitPackage)
 
 
 def emitHands(gamecode):
@@ -80,17 +80,17 @@ def emitHands(gamecode):
     hands["Characters"] = char_names
 
     #TODO: Emit to single player; I think this should work
-    # emit("pop_hand", hands, to=gamecode)
+    emit("pop_hand", hands, to=gamecode)
     print('Here are the hands and character names: ')
     print(hands)
-    emit("pop_hand", hands)
+    #emit("pop_hand", hands)
 
 
 def emitState(gamecode: str):
     state = generateGameState(gamecode)
     print(state)
-    # emit("pop_locations", state, to=gamecode)
-    emit("pop_locations", state)
+    # emit("pop_locations", state)
+    emit("pop_locations", state, to=gamecode)
 
 
 def generateGameState(gamecode):

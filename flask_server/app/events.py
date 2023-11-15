@@ -90,25 +90,42 @@ def handle_user_join(data):
         except:
             print("error creating a new game from scratch")
 
-    user.activeGame = game.id
-    game.playerCount = game.playerCount + 1
-    commit_changes()
-    print('before join game')
-
-    print(game)
     print(user)
-
-    join_room(game.gameCode)
-
-    print('after join room')
     print(game)
-    print(user)
 
     emit("pass_game", {"gameCode": game.gameCode, "username": name, "isLeader": user.isLeader})
 
     message = f"User {name} has joined the game"
 
-    emit("message_chat", {"message": message}, to=game.gameCode)
+    #emit("message_chat", {"message": message}, to=game.gameCode)
+
+@socketio.on("game_join")
+def game_join(data):
+
+    username = data['username']
+    gamecode = data['gameCode']
+
+    user = User.query.filter_by(username=username).first()
+    game = Game.query.filter_by(gameCode=gamecode).first()
+
+    print(f"{username} has joined game {gamecode}")
+
+    user.activeGame = game.id
+    game.playerCount = game.playerCount + 1
+
+    commit_changes()
+
+    print("before join")
+    print(user)
+    print(game)
+    join_room(gamecode)
+
+    print("after join")
+    print(user)
+    print(game)
+
+    message = f"{username} has joined the game!"
+    emit("message_chat", {"message": message}, to=gamecode)
 
 
 @socketio.on("disconnect")
@@ -187,8 +204,8 @@ def action_move(data):
 
     # Create message and emit message to summarize action
     message = f"{username} moved to {location}"
-    # emit("message_chat", {"message": message}, to=gamecode)
-    emit("message_chat", {"message": message})
+    emit("message_chat", {"message": message}, to=gamecode)
+    #emit("message_chat", {"message": message}, to=gamecode)
 
 @socketio.on('get_paths')
 def get_paths(data):
@@ -232,16 +249,16 @@ def action_suggestion(data):
         dis = Hand.disprove(gamecode, character, weapon, location)
 
         message = f"{username} has suggested: {character}, {location}, {weapon}"
-        # emit("message_chat", {"message": message}, to=gamecode)
-        emit("message_chat", {"message": message})
+        emit("message_chat", {"message": message}, to=gamecode)
+        #emit("message_chat", {"message": message})
 
         if dis is None:
             message = f"{username} was disproven by {dis}"
         else:
             message = f"{username} was not disproven"
 
-        # emit("message_chat", {"message": message}, to=gamecode)
-        emit("message_chat", {"message": message})
+        emit("message_chat", {"message": message}, to=gamecode)
+        #emit("message_chat", {"message": message})
 
         emitState(gamecode)
 
@@ -273,8 +290,8 @@ def action_accuse(data):
         location = PlayerInfo.getPlayerLocation(gamecode, username)
 
         message = f"{username} has accused: {character}, {location}, {weapon}"
-        # emit("message_chat", {"message": message}, to=gamecode)
-        emit("message_chat", {"message": message})
+        emit("message_chat", {"message": message}, to=gamecode)
+        #emit("message_chat", {"message": message})
 
         PlayerInfo.movePlayer(gamecode, location, character=character)
         WeaponLocation.moveWeapon(gamecode, weapon, location)
@@ -285,11 +302,11 @@ def action_accuse(data):
 
         if correct:
             message = f"{username} has guessed successfully!"
-            #  emit("message_chat", {"message": message}, to=gamecode)
-            emit("message_chat", {"message": message})
+            emit("message_chat", {"message": message}, to=gamecode)
+            #emit("message_chat", {"message": message})
             Winner.addWinner(username, gamecode)
-            # emit("game_over", {}, to=gamecode)
-            emit("game_over", {})
+            emit("game_over", {}, to=gamecode)
+            #emit("game_over", {})
         else:
             PlayerOrder.setEliminated(gamecode, username)
             message = f"{username} has guessed incorrectly and has been eliminated!"
@@ -299,7 +316,7 @@ def action_accuse(data):
     except Exception as e:
         # Log and emit the error
         db.session.rollback()
-        emit("error_message", {"error": str(e)})
+        emit("error_message", {"error": str(e)}, to=gamecode)
 
         # Print the error
         print(f"Error in action_suggestion: {e}")

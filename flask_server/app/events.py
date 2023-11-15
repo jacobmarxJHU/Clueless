@@ -302,6 +302,8 @@ def action_accuse(data):
     if correct:
         message = f"{username} has guessed successfully!"
         emit("message_chat", {"message": message}, to=gamecode)
+        message = f"GAME OVER!!! Congrats {username}!"
+        emit("message_chat", {"message": message}, to=gamecode)
         #emit("message_chat", {"message": message})
         Winner.addWinner(username, gamecode)
         emit("game_over", {}, to=gamecode)

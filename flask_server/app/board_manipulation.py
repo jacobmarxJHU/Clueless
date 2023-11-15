@@ -89,7 +89,7 @@ def emitHands(gamecode):
 def emitState(gamecode: str):
     state = generateGameState(gamecode)
     print(state)
-    # emit("pop_locations", state)
+    # emit("pop_locations", state) 
     emit("pop_locations", state, to=gamecode)
 
 

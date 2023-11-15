@@ -328,7 +328,7 @@ def action_turnEnd(data):
     Invokes next turn function.
 
     :param data: json object with structure {gamecode: gamecode}
-    :return: None
+    :return: None 
     """
 
     # Get game code and invoke next turn

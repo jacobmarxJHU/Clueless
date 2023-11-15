@@ -86,7 +86,7 @@ const GameLayout = ({ username, gameCode, isLeader, chatMessages, userHand }) =>
       console.log("Disconnected from socket.io server from GameLayout");
     });
 
-    // Clean up the socket when the component unmounts
+    // Clean up the socket when the component unmounts 
     return () => {
       gameSocket.close();
     };

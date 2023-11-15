@@ -17,36 +17,28 @@ const useStyles = makeStyles((theme) => ({
 
 const GameStatusBanner = ({ isLeader, socket, gameCode }) => {
   const classes = useStyles();
-  const [status, setStatus] = useState(""); // Initialize with empty string or any default status
-
-  /*
-  const handleStartGame = () => {
-    // Emit the start_game event with the gameCode in an object
-    // and include a callback for the server's acknowledgement
-    console.log(gameCode);
-    socket.emit('start_game', { gameCode: gameCode }, (response) => {
-      console.log('Server responded with:', response);
-    });
-  };
-  */
-
+  const [status, setGameStatus] = useState("");
+  
   useEffect(() => {
-    const handleStartTurn = () => {
-      setStatus("It's your turn!");
-    };
+    if (socket) {
+      socket.on('start_turn', () => {
+        alert("It's your turn!");
+        setGameStatus("It's your turn!");
+      });
 
-    // Setup the event listener for 'start_turn' event
-    socket?.on('start_turn', handleStartTurn);
-
-    // Return a cleanup function to remove the event listener
-    return () => {
-      socket?.off('start_turn', handleStartTurn);
-    };
+      // Clean up the listener when the component unmounts
+      return () => {
+        socket.off('start_turn');
+      };
+    }
   }, [socket]);
 
   const handleStartGame = () => {
-    // Emit the 'start_game' event when the button is clicked
-    socket?.emit('start_game', { gameCode: gameCode });
+    // Emit the start_game event to the server when the button is clicked
+    if (socket) {
+      socket.emit('start_game', { gameCode: gameCode });
+      setGameStatus("Game started!");
+    }
   };
 
   return (

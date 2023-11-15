@@ -45,18 +45,21 @@ const useStyles = makeStyles((theme) => ({
 const PlayerHand = ({ socket, username }) => {
   const classes = useStyles();
   const [userHand, setUserHand] = useState([]); // State to hold the user's hand
-
-  // Replace with the actual character from user's game state
-  const userCharacter = 'GET MY CHARACTER';
+  const [userCharacter, setUserCharacter] = useState([]); // State to hold the user's hand
 
   useEffect(() => {
     // Listen for the 'pop_hand' event from the server
     if (socket) {
-      socket.on('pop_hand', (hands) => {
+      socket.on('pop_hand', (data) => {
         // Update the user's hand based on the username
-        const newUserHand = hands[username];
+        const newUserHand = data.playerHands[username];
         if (newUserHand) {
           setUserHand(newUserHand);
+        }
+        // Update the user's character based on the username
+        const newUserCharacter = data.playerCharacters[username];
+        if (newUserCharacter) {
+          setUserCharacter(newUserCharacter);
         }
       });
 

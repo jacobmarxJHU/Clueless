@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Button, 
   Modal, 
@@ -45,16 +45,27 @@ const PlayerActions = ({ gameCode, socket, username }) => {
   const [actionType, setActionType] = useState('');
   const [character, setCharacter] = useState('');
   const [weapon, setWeapon] = useState('');
-  const [path, setPath] = useState('');
+  const [paths, setPaths] = useState([]);
+  const [selectedPath, setSelectedPath] = useState('');
 
   // Character and Weapon dropdown data
   const characters = ['Miss Scarlet', 'Colonel Mustard', 'Mrs. White', 'Mr. Green', 'Mrs. Peacock', 'Professor Plum'];
   const weapons = ['Candlestick', 'Knife', 'Lead Pipe', 'Revolver', 'Rope', 'Wrench'];
-  const paths = ['Hallway', 'Study', 'Lounge'];
 
-  // Handler function to set a new path
+  useEffect(() => {
+    if (socket) {
+      socket.on('start_turn', (data) => {
+        console.log(data);
+        let user = data[username];
+        setPaths(user.locations); // Populate the paths with data from the server
+      });
+
+      return () => socket.off('start_turn');
+    }
+  }, [socket]);
+
   const handlePathChange = (event) => {
-    setPath(event.target.value);
+    setSelectedPath(event.target.value);
   };
 
   const handleOpen = (action) => {
@@ -81,7 +92,7 @@ const PlayerActions = ({ gameCode, socket, username }) => {
       case 'move':
         emitData = {
           username: username,
-          new_loc: path,
+          new_loc: selectedPath,
         };
         socket.emit('action_move', emitData);
         break;
@@ -142,7 +153,7 @@ const PlayerActions = ({ gameCode, socket, username }) => {
               <Select
                 labelId="path-select"
                 id="path-select"
-                value={path}
+                value={selectedPath}
                 onChange={handlePathChange}
               >
                  {paths.map((path) => (

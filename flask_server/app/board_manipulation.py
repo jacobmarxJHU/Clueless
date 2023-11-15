@@ -58,7 +58,7 @@ def emitTurnInfo(gamecode: str, username: str = None):
     print(emitPackage)
     playerSid = PlayerOrder.getCurrSid(gamecode)
 
-    emit("start_turn", emitPackage, to=gamecode)
+    emit("start_turn", emitPackage, to=playerSid)
 
     username = PlayerOrder.getCurrentUsername(gamecode)
 

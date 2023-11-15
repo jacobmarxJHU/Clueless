@@ -80,7 +80,7 @@ def emitHands(gamecode):
     return_dict = {"playerHands": hands, "playerCharacters": char_names}
 
     #TODO: Emit to single player; I think this should work
-    emit("pop_hand", hands, to=gamecode)
+    #emit("pop_hand", hands, to=gamecode)
     print('Here are the hands and character names: ')
     print(return_dict)
     emit("pop_hand", return_dict, to=gamecode)

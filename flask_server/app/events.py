@@ -286,8 +286,9 @@ def action_accuse(data):
     username = data['username']
     character = data['character']
     weapon = data['weapon']
+    location = data['room']
     gamecode = Game.query.filter_by(id=User.getGid(username)).first().gameCode
-    location = PlayerInfo.getPlayerLocation(gamecode, username)
+    #location = PlayerInfo.getPlayerLocation(gamecode, username)
 
     message = f"{username} has accused: {character}, {location}, {weapon}"
     emit("message_chat", {"message": message}, to=gamecode)

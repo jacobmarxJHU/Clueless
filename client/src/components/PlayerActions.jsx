@@ -45,12 +45,15 @@ const PlayerActions = ({ gameCode, socket, username }) => {
   const [actionType, setActionType] = useState('');
   const [character, setCharacter] = useState('');
   const [weapon, setWeapon] = useState('');
+  const [room, setRoom] = useState('');
   const [paths, setPaths] = useState([]);
   const [selectedPath, setSelectedPath] = useState('');
+
 
   // Character and Weapon dropdown data
   const characters = ['Miss Scarlet', 'Colonel Mustard', 'Mrs. White', 'Mr. Green', 'Mrs. Peacock', 'Professor Plum'];
   const weapons = ['Candlestick', 'Knife', 'Lead Pipe', 'Revolver', 'Rope', 'Wrench'];
+  const rooms = ['Ballroom', 'Billiard Room', 'Conservatory', 'Dining Room', 'Hall', 'Kitchen', 'Library', 'Lounge', 'Study'];
 
   useEffect(() => {
     if (socket) {
@@ -78,6 +81,10 @@ const PlayerActions = ({ gameCode, socket, username }) => {
 
   const handleClose = () => {
     setOpen(false);
+    // Reset states
+    setCharacter('');
+    setWeapon('');
+    setRoom('');
   };
 
   const handleActionSubmit = () => {
@@ -89,7 +96,7 @@ const PlayerActions = ({ gameCode, socket, username }) => {
     let emitData = {};
 
     // For testing until pulling user's location works
-    let room = 'Hall';
+    // let room = 'Hall';
 
     switch (actionType) {
       case 'move':
@@ -115,6 +122,7 @@ const PlayerActions = ({ gameCode, socket, username }) => {
           weapon: weapon,
           room: room
         };
+        console.log(emitData);
         socket.emit('action_accuse', emitData);
         break;
       case 'endTurn':
@@ -167,7 +175,7 @@ const PlayerActions = ({ gameCode, socket, username }) => {
             <Button onClick={handleActionSubmit}>Submit</Button>
           </div>
         );
-      default:
+      case 'suggestion':
         return (
           <div className={classes.paper}>
             <h2 id="transition-modal-title">Select Options</h2>
@@ -203,6 +211,68 @@ const PlayerActions = ({ gameCode, socket, username }) => {
                         {weapon}
                       </MenuItem>
                     ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+            </Grid>
+            <Button onClick={handleActionSubmit} color="primary">
+              Submit
+            </Button>
+          </div>
+        );
+      case 'accusation':
+        return (
+          <div className={classes.paper}>
+            <h2 id="transition-modal-title">Select Options</h2>
+            <Grid container spacing={2}>
+              <Grid item xs={4}>
+                <FormControl className={classes.formControl}>
+                  <InputLabel id="character-select-label">Character</InputLabel>
+                  <Select
+                    labelId="character-select-label"
+                    id="character-select"
+                    value={character}
+                    onChange={(e) => setCharacter(e.target.value)}
+                  >
+                     {characters.map((character, index) => (
+                      <MenuItem key={index} value={character}>
+                        {character}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+              <Grid item xs={4}>
+                <FormControl className={classes.formControl}>
+                  <InputLabel id="weapon-select-label">Weapon</InputLabel>
+                  <Select
+                    labelId="weapon-select-label"
+                    id="weapon-select"
+                    value={weapon}
+                    onChange={(e) => setWeapon(e.target.value)}
+                  >
+                    {weapons.map((weapon, index) => (
+                      <MenuItem key={index} value={weapon}>
+                        {weapon}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+              <Grid item xs={4}>
+                <FormControl className={classes.formControl}>
+                  <InputLabel id="room-select-label">Room</InputLabel>
+                  <Select
+                      labelId="room-select-label"
+                      id="room-select"
+                      value={room}
+                      onChange={(e) => setRoom(e.target.value)}
+                  >
+                      {rooms.map((room, index) => (
+                          <MenuItem key={index} value={room}>
+                              {room}
+                          </MenuItem>
+                      ))}
                   </Select>
                 </FormControl>
               </Grid>

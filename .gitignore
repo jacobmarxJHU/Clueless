@@ -13,3 +13,4 @@ db_credentials.txt
 /.idea/vcs.xml
 /.idea/sqldialects.xml
 /.idea/dataSources.xml
+/package-lock.json

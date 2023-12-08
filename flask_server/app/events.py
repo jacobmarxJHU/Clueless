@@ -199,6 +199,11 @@ def action_move(data):
     # Get game information
     username = data["username"]
     location = data['new_loc']
+
+    # Removes appended secret path tag
+    if " (Secret Path)" in location:
+        location = location.replace(" (Secret Path)", "")
+
     gid = User.getGid(username)
     gamecode = db.session.get(Game, gid).gameCode
     PlayerInfo.movePlayer(gamecode, location, username=username)

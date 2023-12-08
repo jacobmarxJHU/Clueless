@@ -307,7 +307,7 @@ def action_accuse(data):
         emit("message_chat", {"message": message}, to=gamecode)
         #emit("message_chat", {"message": message})
         Winner.addWinner(username, gamecode)
-        emit("game_over", {}, to=gamecode)
+        emit("game_over", {"message": message}, to=gamecode)
         #emit("game_over", {})
     else:
         PlayerOrder.setEliminated(gamecode, username)

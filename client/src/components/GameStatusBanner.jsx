@@ -26,10 +26,9 @@ const GameStatusBanner = ({ isLeader, socket, gameCode }) => {
         setGameStatus("It's your turn!");
       });
 
-      socket.on('message_chat', (message) => {
+      socket.on('game_over', (data) => {
         // Display the game over message received from the server
-        alert(message);
-        setGameStatus(message);
+        setGameStatus(data.message);
       });
 
       // Clean up the listener when the component unmounts

@@ -3,23 +3,22 @@ import { Paper, List, ListItem, ListItemIcon, Typography, makeStyles } from '@ma
 import ChatIcon from '@material-ui/icons/Chat';
 
 const useStyles = makeStyles((theme) => ({
-  updatesBox: {
-    marginTop: theme.spacing(2),
-    maxHeight: '300px', // Set a max-height for scrolling
-    overflow: 'auto',
-    padding: theme.spacing(2),
-    backgroundColor: '#F3F6F9',
-    border: '1px solid black',
-    minHeight: 395,
-  },
-  updateMessage: {
-    listStyleType: 'none', // Removes list style
-    backgroundColor: theme.palette.background.paper,
+  header: {
+    backgroundColor: '#303f9f',
+    color: '#fff',
     padding: theme.spacing(1),
-    borderRadius: theme.shape.borderRadius,
-    marginBottom: theme.spacing(1),
-    display: 'flex',
-    alignItems: 'center',
+    textAlign: 'center',
+    fontWeight: 'bold',
+  },
+  updatesBox: {
+    height: '140px',
+    overflow: 'hidden',
+    marginBottom: theme.spacing(2),
+  },
+  updates: {
+    height: 'calc(100% - 48px)', // Adjust height to subtract the header height
+    overflowY: 'auto',
+    backgroundColor: theme.palette.background.paper,
   },
   icon: {
     marginRight: theme.spacing(1),
@@ -49,11 +48,14 @@ const GameUpdates = ({ socket }) => {
   }, [socket]); // Only re-run the effect if the socket instance changes
 
   return (
+    
     <Paper className={classes.updatesBox}>
-      <Typography variant="h6">Status Updates</Typography>
-      <List>
+      <Typography variant="subtitle1" className={classes.header}>
+        Status Updates
+      </Typography>
+      <List className={classes.updates}>
         {messages.map((message, index) => (
-          <ListItem key={index} className={classes.updateMessage}>
+          <ListItem key={index} className={classes.messageItem}>
             <ListItemIcon className={classes.icon}>
               <ChatIcon color="primary" />
             </ListItemIcon>

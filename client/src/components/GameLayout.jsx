@@ -102,7 +102,7 @@ const GameLayout = ({ username, gameCode, isLeader, chatMessages, userHand }) =>
           <CharacterAndWeaponLocation socket={socketInstance} />
         </Grid>
         <Grid item xs={12} sm={4} className={classes.gameBoardGridItem}>
-          <GameBoard image="/path/to/gameBoard.png" />
+          <GameBoard socket={socketInstance} />
         </Grid>
         <Grid item xs={12} sm={4} className={classes.equalColumn}>
           <GameUpdates socket={socketInstance} />

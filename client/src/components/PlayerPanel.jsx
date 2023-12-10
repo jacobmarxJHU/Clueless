@@ -2,6 +2,12 @@ import React from 'react';
 import { Paper, Divider, makeStyles, Typography } from '@material-ui/core';
 import PlayerHand from './PlayerHand';
 import PlayerActions from './PlayerActions';
+import PlayerNotebook from './PlayerNotebook';
+
+// Character, weapon, and room data
+const characters = ['Miss Scarlet', 'Colonel Mustard', 'Mrs. White', 'Mr. Green', 'Mrs. Peacock', 'Professor Plum'];
+const weapons = ['Candlestick', 'Knife', 'Lead Pipe', 'Revolver', 'Rope', 'Wrench'];
+const rooms = ['Ballroom', 'Billiard Room', 'Conservatory', 'Dining Room', 'Hall', 'Kitchen', 'Library', 'Lounge', 'Study'];
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -25,9 +31,10 @@ const PlayerPanel = ({ username, gameCode, socket }) => {
 
   return (
     <Paper className={classes.root} elevation={2}>
-      <PlayerActions gameCode={gameCode} socket={socket} username={username} />
+      <PlayerActions gameCode={gameCode} socket={socket} username={username} characters={characters} weapons={weapons} rooms={rooms} />
       <Divider className={classes.divider} />
-      <PlayerHand socket={socket} username={username} />
+      <PlayerHand socket={socket} username={username} characters={characters} weapons={weapons} rooms={rooms} />
+      <PlayerNotebook characters={characters} weapons={weapons} rooms={rooms} />
       <Typography variant="body2">Game Code: {gameCode}</Typography>
     </Paper>
   );

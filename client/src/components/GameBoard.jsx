@@ -10,7 +10,7 @@ const useStyles = makeStyles((theme) => ({
   gameBoardImage: {
     maxWidth: '100%', // Ensures the image is not wider than its container
     maxHeight: '100%', // Ensures the image is not taller than its container
-    height: 'auto', // Maintains the aspect ratio of the image
+    height: '490px', // Maintains the aspect ratio of the image
     display: 'block', // Removes any inline spacing
     margin: '0 auto', // Centers the image if it's not as wide as its container
   },

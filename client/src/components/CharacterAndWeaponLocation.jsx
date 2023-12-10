@@ -23,6 +23,8 @@ const useStyles = makeStyles((theme) => ({
     width: '40%',
     minHeight: '400px',
     marginRight: theme.spacing(2),
+    maxHeight: '400px', // Set a fixed height
+    overflow: 'auto', // Enable scrolling
   },
   table: {
     maxWidth: 250,

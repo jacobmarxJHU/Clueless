@@ -24,6 +24,8 @@ const useStyles = makeStyles((theme) => ({
   header: {
     textAlign: 'center',
     padding: theme.spacing(2),
+    backgroundColor: theme.palette.primary.dark,
+    color: theme.palette.common.white,
   },
   table: {
     minWidth: 650,

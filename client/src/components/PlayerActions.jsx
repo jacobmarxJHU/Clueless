@@ -39,7 +39,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const PlayerActions = ({ gameCode, socket, username }) => {
+const PlayerActions = ({ gameCode, socket, username, characters, weapons, rooms }) => {
   const classes = useStyles();
   const [open, setOpen] = useState(false);
   const [actionType, setActionType] = useState('');
@@ -48,12 +48,6 @@ const PlayerActions = ({ gameCode, socket, username }) => {
   const [room, setRoom] = useState('');
   const [paths, setPaths] = useState([]);
   const [selectedPath, setSelectedPath] = useState('');
-
-
-  // Character and Weapon dropdown data
-  const characters = ['Miss Scarlet', 'Colonel Mustard', 'Mrs. White', 'Mr. Green', 'Mrs. Peacock', 'Professor Plum'];
-  const weapons = ['Candlestick', 'Knife', 'Lead Pipe', 'Revolver', 'Rope', 'Wrench'];
-  const rooms = ['Ballroom', 'Billiard Room', 'Conservatory', 'Dining Room', 'Hall', 'Kitchen', 'Library', 'Lounge', 'Study'];
 
   useEffect(() => {
     if (socket) {

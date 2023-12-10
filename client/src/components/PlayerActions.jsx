@@ -81,7 +81,7 @@ const PlayerActions = ({ gameCode, socket, username, characters, weapons, rooms 
     setRoom('');
   };
 
-  const handleActionSubmit = () => {
+  const handleActionSubmit = (actionType) => {
     if (!socket) {
       console.error('Socket instance is not available');
       return;
@@ -143,8 +143,8 @@ const PlayerActions = ({ gameCode, socket, username, characters, weapons, rooms 
   };
 
   const handleEndTurn = () => {
-    setActionType('endTurn');
-    handleActionSubmit();
+    // setActionType('endTurn');
+    handleActionSubmit('endTurn');
   };
 
   const renderModalContent = () => {
@@ -166,7 +166,10 @@ const PlayerActions = ({ gameCode, socket, username, characters, weapons, rooms 
                   ))}
               </Select>
             </FormControl>
-            <Button onClick={handleActionSubmit}>Submit</Button>
+                        <Button onClick={() => handleActionSubmit('move')}>
+
+              Submit
+            </Button>
           </div>
         );
       case 'suggestion':
@@ -209,7 +212,7 @@ const PlayerActions = ({ gameCode, socket, username, characters, weapons, rooms 
                 </FormControl>
               </Grid>
             </Grid>
-            <Button onClick={handleActionSubmit} color="primary">
+            <Button onClick={() => handleActionSubmit('suggestion')} color="primary">
               Submit
             </Button>
           </div>
@@ -271,7 +274,7 @@ const PlayerActions = ({ gameCode, socket, username, characters, weapons, rooms 
                 </FormControl>
               </Grid>
             </Grid>
-            <Button onClick={handleActionSubmit} color="primary">
+            <Button onClick={() => handleActionSubmit('accusation')} color="primary">
               Submit
             </Button>
           </div>

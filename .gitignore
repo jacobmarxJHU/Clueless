@@ -14,3 +14,4 @@ db_credentials.txt
 /.idea/sqldialects.xml
 /.idea/dataSources.xml
 /package-lock.json
+qodana.yaml

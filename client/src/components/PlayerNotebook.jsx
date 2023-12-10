@@ -82,7 +82,7 @@ const PlayerNotebook = ({  characters, weapons, rooms }) => {
         <TableBody>
           {[...Array(Math.max(characters.length, weapons.length, rooms.length))].map((_, index) => (
             <TableRow key={index}>
-              <TableCell>
+              <TableCell style={{ borderBottom:'none' }}>
                 {characters[index] && (
                   <div>
                     <Checkbox
@@ -96,7 +96,7 @@ const PlayerNotebook = ({  characters, weapons, rooms }) => {
                   </div>
                 )}
               </TableCell>
-              <TableCell>
+              <TableCell style={{ borderBottom:'none' }}>
                 {weapons[index] && (
                   <div>
                     <Checkbox
@@ -110,7 +110,7 @@ const PlayerNotebook = ({  characters, weapons, rooms }) => {
                   </div>
                 )}
               </TableCell>
-              <TableCell>
+              <TableCell style={{ borderBottom:'none' }}>
                 {rooms[index] && (
                   <div>
                     <Checkbox

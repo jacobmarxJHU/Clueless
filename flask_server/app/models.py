@@ -369,33 +369,52 @@ class Path(db.Model):
 
         paths1 = Path.query.filter_by(locationId1=currLoc).join(
             Location, Location.id==Path.locationId2).add_columns(
-                Location.locationName).all()
+                Location.locationName, Location.isRoom).all()
+
         paths2 = Path.query.filter_by(locationId2=currLoc).join(
             Location, Location.id==Path.locationId1).add_columns(
-                Location.locationName).all()
-        
+                Location.locationName, Location.isRoom).all()
+
+        # Get locations of all other players in the game
+        occupied_locations = PlayerInfo.query.filter(
+            PlayerInfo.gameId == gid,
+            PlayerInfo.playerId != uid
+        ).all()
+
+        occupied_locations = [p.locationId for p in occupied_locations]
+
         newLocs = []
 
         if paths1:
             print("paths2")
             for p in paths1:
+                loc_id = p[0].locationId2
                 if p[0].isSecret:
                     secretPath = p[1] + " (Secret Path)"
                     newLocs.append(secretPath)
                 else:
+                    # Skip occupied hallways
+                    if loc_id in occupied_locations and not p[2]:
+                        continue
+
                     newLocs.append(p[1])
 
         if paths2:
             print("paths1")
             for p in paths2:
+                loc_id = p[0].locationId1
                 if p[0].isSecret:
                     secretPath = p[1] + " (Secret Path)"
                     newLocs.append(secretPath)
                 else:
+                    # Skip occupied hallways
+                    if loc_id in occupied_locations and not p[2]:
+                        continue
+
                     newLocs.append(p[1])
 
         pathInfo = {"inRoom": room, 'locations': newLocs}
-        
+
         return pathInfo
 
     def __repr__(self) -> str:

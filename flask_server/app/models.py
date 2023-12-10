@@ -801,6 +801,10 @@ class User(db.Model):
     @classmethod
     def getGid(cls, username):
         return User.query.filter_by(username=username).first().activeGame
+    
+    @classmethod
+    def getUsernameFromSession(cls, sid):
+        return User.query.filter_by(sessionInfo=sid).first().username
 
     def __repr__(self):
         return f"<User id: {self.id}, username: {self.username}, playerStatus: {self.playerStatus}, playerCode: {self.playerCode}, sessionInfo: {self.sessionInfo}, activeGame: {self.activeGame}>"

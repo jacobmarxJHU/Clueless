@@ -51,8 +51,8 @@ const GameUpdates = ({ socket }) => {
         setGameUpdates(prevUpdates => [...prevUpdates, data.message]);
       });
 
-      socket.on('game_chat', (message) => {
-        setChatMessages(prevMessages => [...prevMessages, message]);
+      socket.on('game_chat', (data) => {
+        setChatMessages(prevMessages => [...prevMessages, data.message]);
       });
 
       // Clean up the event listener when the component unmounts

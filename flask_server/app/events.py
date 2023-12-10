@@ -337,7 +337,7 @@ def action_turnEnd(data):
     :param data: json object with structure {gamecode: gamecode}
     :return: None 
     """
-    print("hello")
+    #print("hello")
 
     # Get game code and invoke next turn
     game_code = data["gamecode"]
@@ -348,4 +348,21 @@ def action_turnEnd(data):
 
     emitTurnInfo(game_code)
     
+
+@socketio.on('send_chat')
+def send_chat(message):
+    """
+    sends user message to the game chat
+    """
+
+    print(message)
+
+    username = User.getUsernameFromSession(request.sid)
+    game_code = Game.getGamecode_username(username)
+
+    newMessage = f"{username}: {message}"
+
+    emit("game_chat", {"message": newMessage}, to=game_code)
+
+
 

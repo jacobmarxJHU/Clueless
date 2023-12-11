@@ -13,10 +13,6 @@ import {
 } from '@material-ui/core';
 
 const useStyles = makeStyles((theme) => ({
-  // header: {
-  //   textAlign: 'center',
-  //   padding: theme.spacing(2),
-  // },
   tableCell: {
     borderBottom: 'none',
     fontWeight: 'bold',

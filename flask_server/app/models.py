@@ -347,6 +347,17 @@ class Location(db.Model):
         return f"<Location {self.locationName}, room: {self.isRoom}>"
 
 
+# Map Spots Table
+class MapSpot(db.Model):
+    __tablename__ = 'MapSpots'
+    __table_args__ = {'schema': 'cs'}
+
+    id = Column(Integer, primary_key=True)
+    row = Column(Integer, nullable=False)
+    col = Column(Integer, nullable=False)
+    locationId = Column(Integer, ForeignKey('cs.Locations.id'), nullable=False)
+
+
 # Paths Table
 class Path(db.Model):
     __tablename__ = 'Paths'
@@ -437,6 +448,7 @@ class PlayerInfo(db.Model):
     locationId = Column(Integer, ForeignKey('cs.Locations.id'), nullable=False)
     isEliminated = Column(Boolean, default=False, nullable=False)
     playerId = Column(Integer, ForeignKey('cs.Users.id'), nullable=False)
+    mapSpotId = Column(Integer, ForeignKey('cs.MapSpots.id'))
 
     @classmethod
     def initializeGame(cls, gamecode:str):

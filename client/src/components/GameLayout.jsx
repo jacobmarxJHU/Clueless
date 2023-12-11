@@ -7,6 +7,7 @@ import GameBoard from './GameBoard';
 import GameUpdates from './GameUpdates';
 import PlayerPanel from './PlayerPanel';
 import { io } from "socket.io-client";
+import GameGrid from './GameGrid';
 
 // Create a context for the socket
 export const SocketContext = createContext(null);
@@ -89,6 +90,8 @@ const GameLayout = ({ username, gameCode, isLeader }) => {
     };
   }, []);
 
+  const board = true;
+
   return (
     <Container className={classes.container}>
       <Navbar username={username} /> 
@@ -99,7 +102,7 @@ const GameLayout = ({ username, gameCode, isLeader }) => {
           <CharacterAndWeaponLocation socket={socketInstance} />
         </Grid>
         <Grid item xs={12} sm={4} className={classes.gameBoardGridItem}>
-          <GameBoard socket={socketInstance} />
+          {board ? <GameBoard socket={socketInstance} /> : <GameGrid socket={socketInstance} />}
         </Grid>
         <Grid item xs={12} sm={4} className={classes.equalColumn}>
           <GameUpdates socket={socketInstance} />

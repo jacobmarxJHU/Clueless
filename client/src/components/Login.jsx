@@ -3,9 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { Button, TextField, Typography, Paper, makeStyles } from '@material-ui/core';
 import { io } from "socket.io-client"
 
-// Initialize socket
-const socket = io(); 
-
 const useStyles = makeStyles((theme) => ({
     container: {
         display: 'flex',

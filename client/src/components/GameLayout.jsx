@@ -62,7 +62,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const GameLayout = ({ username, gameCode, isLeader, chatMessages, userHand }) => {
+const GameLayout = ({ username, gameCode, isLeader }) => {
   const classes = useStyles();
   const [socketInstance, setSocket] = useState(null);
 
@@ -82,13 +82,10 @@ const GameLayout = ({ username, gameCode, isLeader, chatMessages, userHand }) =>
       console.log("Connected to socket.io server from GameLayout");
     });
 
-    gameSocket.on("disconnect", () => {
-      console.log("Disconnected from socket.io server from GameLayout");
-    });
-
     // Clean up the socket when the component unmounts 
     return () => {
-      gameSocket.close();
+      gameSocket.disconnect();
+      console.log('Disconnected from socket.io server');
     };
   }, []);
 

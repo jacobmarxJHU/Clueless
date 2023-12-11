@@ -50,15 +50,13 @@ const GameStatusBanner = ({ isLeader, socket, gameCode }) => {
   return (
     <Paper elevation={4} className={classes.banner}>
       <Typography variant="subtitle1"><strong>{status}</strong></Typography>
-      {isLeader ? (
+      {isLeader && (
         <Button
           variant="contained"
           color="primary"
-          className={classes.startButton} 
+          className={classes.startButton}
           onClick={handleStartGame}
         >Start Game!</Button>
-      ) : (
-        <Typography variant="subtitle1"><strong>{status}</strong></Typography>
       )}
     </Paper>
   );

@@ -1,6 +1,6 @@
 from flask import request
 from flask_socketio import emit, join_room
-from .models import User, Game, db, Path, PlayerInfo, Character, Winner, WeaponLocation, Location, Weapon, Guess, Solution, Hand, PlayerOrder
+from .models import User, Game, db, Path, PlayerInfo, Character, Winner, WeaponLocation, Location, Weapon, Guess, Solution, Hand, PlayerOrder, MapSpot
 from .board_manipulation import initialize_board, emitTurnInfo, emitState
 import json
 from .utility import commit_changes
@@ -363,6 +363,5 @@ def send_chat(message):
     newMessage = f"{username}: {message}"
 
     emit("game_chat", {"message": newMessage}, to=game_code)
-
 
 

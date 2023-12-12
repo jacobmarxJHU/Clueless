@@ -1,6 +1,6 @@
 from app import db
 from .models import (
-    Game, PlayerOrder, WeaponLocation, Path, Hand, PlayerInfo, Solution, User, Character
+    Game, PlayerOrder, WeaponLocation, Path, Hand, PlayerInfo, Solution, User, Character,  MapSpot
 )
 import random
 import json
@@ -69,6 +69,13 @@ def emitTurnInfo(gamecode: str, username: str = None):
     #emit("start_turn", emitPackage)
 
 
+def emitMapInfo(gamecode: str):
+    mapDict = MapSpot.getMapDict(gamecode)
+
+    emit("popMapLocations", {"colors": mapDict}, to=gamecode)
+
+
+
 def emitHands(gamecode):
     # Get hands for each player in game
     hands = Hand.retrieveHand(gamecode)
@@ -100,6 +107,7 @@ def emitState(gamecode: str):
     print(state)
     # emit("pop_locations", state) 
     emit("pop_locations", state, to=gamecode)
+    emitMapInfo(gamecode)
 
 
 def generateGameState(gamecode):

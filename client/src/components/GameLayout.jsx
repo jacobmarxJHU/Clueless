@@ -90,8 +90,8 @@ const GameLayout = ({ username, gameCode, isLeader }) => {
     };
   }, []);
 
-  const board = true;
-
+  const board = false;
+  
   return (
     <Container className={classes.container}>
       <Navbar username={username} /> 

@@ -59,17 +59,17 @@ export default function Square({value}) {
     const classes = useStyles();
 
     if (value === 'red') {
-        return (<div className={classes.dotRed}></div>)
+        return (<div className={classes.dotRed}>MS</div>)
     } else if (value === 'blue') {
-        return (<div className={classes.dotBlue}></div>)
+        return (<div className={classes.dotBlue}>MP</div>)
     } else if (value === 'white') {
-        return (<div className={classes.dotWhite}></div>)
+        return (<div className={classes.dotWhite}>MW</div>)
     } else if (value === 'purple') {
-        return (<div className={classes.dotPurple}></div>)
+        return (<div className={classes.dotPurple}>PP</div>)
     } else if (value === 'yellow') {
-        return (<div className={classes.dotYellow}></div>)
+        return (<div className={classes.dotYellow}>CM</div>)
     } else if (value === 'green') {
-        return (<div className={classes.dotGreen}></div>)
+        return (<div className={classes.dotGreen}>MG</div>)
     } else {
         return (<div className={classes.square}>{value}</div>)
     }

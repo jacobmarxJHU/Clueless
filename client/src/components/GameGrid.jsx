@@ -22,30 +22,30 @@ const useStyles = makeStyles((theme) => ({
 export default function GameGrid({socket}) {
 
     const classes = useStyles();
-
+/*
     const [colors, setColors] = useState({
         row0: ['', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''],
         row1: ['', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''],
-        row2: ['', '', 'yellow', 'red', 'purple', 'blue', 'green', 'yellow', 'red', 'purple', 'blue', 'green', 'yellow', 'red', 'purple', 'blue', 'green', 'yellow', 'red', 'purple'],
-        row3: ['', '', 'yellow', 'red', 'purple', 'blue', 'green', 'yellow', 'red', 'purple', 'blue', 'green', 'yellow', 'red', 'purple', 'blue', 'green', 'yellow', 'red', 'purple'],
-        row4: ['', '', 'yellow', 'red', 'purple', 'blue', 'green', 'yellow', 'red', 'purple', 'blue', 'green', 'yellow', 'red', 'purple', 'blue', 'green', 'yellow', 'red', 'purple'],
-        row5: ['', '', 'yellow', 'red', 'purple', 'blue', 'green', 'yellow', 'red', 'purple', 'blue', 'green', 'yellow', 'red', 'purple', 'blue', 'green', 'yellow', 'red', 'purple'],
-        row6: ['', '', 'yellow', 'red', 'purple', 'blue', 'green', 'yellow', 'red', 'purple', 'blue', 'green', 'yellow', 'red', 'purple', 'blue', 'green', 'yellow', 'red', 'purple'],
-        row7: ['', '', 'yellow', 'red', 'purple', 'blue', 'green', 'yellow', 'red', 'purple', 'blue', 'green', 'yellow', 'red', 'purple', 'blue', 'green', 'yellow', 'red', 'purple'],
-        row8: ['', '', 'yellow', 'red', 'purple', 'blue', 'green', 'yellow', 'red', 'purple', 'blue', 'green', 'yellow', 'red', 'purple', 'blue', 'green', 'yellow', 'red', 'purple'],
-        row9: ['', '', 'yellow', 'red', 'purple', 'blue', 'green', 'yellow', 'red', 'purple', 'blue', 'green', 'yellow', 'red', 'purple', 'blue', 'green', 'yellow', 'red', 'purple'],
-        row10: ['', '', 'yellow', 'red', 'purple', 'blue', 'green', 'yellow', 'red', 'purple', 'blue', 'green', 'yellow', 'red', 'purple', 'blue', 'green', 'yellow', 'red', 'purple'],
-        row11: ['', '', 'yellow', 'red', 'purple', 'blue', 'green', 'yellow', 'red', 'purple', 'blue', 'green', 'yellow', 'red', 'purple', 'blue', 'green', 'yellow', 'red', 'purple'],
-        row12: ['', '', 'yellow', 'red', 'purple', 'blue', 'green', 'yellow', 'red', 'purple', 'blue', 'green', 'yellow', 'red', 'purple', 'blue', 'green', 'yellow', 'red', 'purple'],
-        row13: ['', '', 'yellow', 'red', 'purple', 'blue', 'green', 'yellow', 'red', 'purple', 'blue', 'green', 'yellow', 'red', 'purple', 'blue', 'green', 'yellow', 'red', 'purple'],
-        row14: ['', '', 'yellow', 'red', 'purple', 'blue', 'green', 'yellow', 'red', 'purple', 'blue', 'green', 'yellow', 'red', 'purple', 'blue', 'green', 'yellow', 'red', 'purple'],
-        row15: ['', '', 'yellow', 'red', 'purple', 'blue', 'green', 'yellow', 'red', 'purple', 'blue', 'green', 'yellow', 'red', 'purple', 'blue', 'green', 'yellow', 'red', 'purple'],
-        row16: ['', '', 'yellow', 'red', 'purple', 'blue', 'green', 'yellow', 'red', 'purple', 'blue', 'green', 'yellow', 'red', 'purple', 'blue', 'green', 'yellow', 'red', 'purple'],
-        row17: ['', '', 'yellow', 'red', 'purple', 'blue', 'green', 'yellow', 'red', 'purple', 'blue', 'green', 'yellow', 'red', 'purple', 'blue', 'green', 'yellow', 'red', 'purple'],
-        row18: ['', '', 'yellow', 'red', 'purple', 'blue', 'green', 'yellow', 'red', 'purple', 'blue', 'green', 'yellow', 'red', 'purple', 'blue', 'green', 'yellow', 'red', 'purple'],
-        row19: ['', '', 'yellow', 'red', 'purple', 'blue', 'green', 'yellow', 'red', 'purple', 'blue', 'green', 'yellow', 'red', 'purple', 'blue', 'green', 'yellow', 'red', 'purple'] 
+        row2: ['', '', '', '', '', '', '', '', '', 'purple', 'blue', '', '', '', '', '', '', '', '', ''],
+        row3: ['', '', 'yellow', 'red', 'purple', '', '', 'yellow', '', 'purple', 'blue', '', '', 'red', '', 'blue', 'green', 'yellow', '', ''],
+        row4: ['', '', 'yellow', 'red', 'purple', '', '', '', '', 'purple', 'blue', '', '', '', '', 'blue', 'green', 'yellow', '', ''],
+        row5: ['', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''],
+        row6: ['', '', '', '', 'purple', '', '', '', '', '', 'blue', '', '', '', '', '', 'green', '', '', ''],
+        row7: ['', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''],
+        row8: ['', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''],
+        row9: ['', '', 'yellow', 'red', 'purple', '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''],
+        row10: ['', '', 'yellow', 'red', 'purple', '', 'blue', '', 'red', 'purple', 'blue', 'green', 'yellow', '', 'purple', '', 'green', 'yellow', '', ''],
+        row11: ['', '', 'yellow', 'red', 'purple', '', '', '', '', '', '', '', '', '', '', '', 'green', 'yellow', '', ''],
+        row12: ['', '', '', '', '', '', '', '', '', '', 'blue', '', '', '', '', '', '', '', '', ''],
+        row13: ['', '', '', '', 'purple', '', '', '', '', '', '', '', '', '', '', '', 'green', '', '', ''],
+        row14: ['', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''],
+        row15: ['', '', '', '', '', '', '', '', '', 'purple', 'blue', 'green', '', '', '', '', '', '', '', ''],
+        row16: ['', '', '', '', '', '', '', 'yellow', '', '', '', '', '', '', '', '', '', '', '', ''],
+        row17: ['', '', 'yellow', 'red', 'purple', '', '', '', '', '', '', '', '', 'red', '', 'blue', 'green', 'yellow', '', ''],
+        row18: ['', '', 'yellow', 'red', 'purple', '', '', '', '', 'purple', 'blue', 'green', '', '', '', 'blue', 'green', 'yellow', '', ''],
+        row19: ['', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '']
     });
-/*
+*/
     const [colors, setColors] = useState({
         row0: ['', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''],
         row1: ['', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''],
@@ -68,7 +68,6 @@ export default function GameGrid({socket}) {
         row18 : ['', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''],
         row19 : ['', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '']}
     );
-    */
 
     useEffect(() => {
         if (socket) {

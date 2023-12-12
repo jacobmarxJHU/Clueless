@@ -7,7 +7,7 @@ from app import db
 from sqlalchemy import Integer, ForeignKey, String, Column, Boolean, CheckConstraint
 from random import choice, sample
 from string import ascii_uppercase
-from .utility import commit_changes
+from .utility import commit_changes, emptyDict
 
 # TODO: Format with SQLAlchemy ORM format (decalarative base and mapped)
 # TODO: Add repr methods to each class
@@ -21,6 +21,7 @@ class Character(db.Model):
 
     id = Column(Integer, primary_key=True)
     character = Column(String(20), nullable=False)
+    color = Column(String[10])
 
     @classmethod
     def getCharacterId(cls, cName):
@@ -356,7 +357,45 @@ class MapSpot(db.Model):
     row = Column(Integer, nullable=False)
     col = Column(Integer, nullable=False)
     locationId = Column(Integer, ForeignKey('cs.Locations.id'), nullable=False)
-    occupied = Column(Boolean)
+    occupied = Column(Boolean, nullable=False)
+
+    @classmethod
+    def getMapDict(cls, game_code):
+        gid = Game.getGameId(game_code)
+        test1 = PlayerInfo.query.filter_by(gameId=gid).all()
+
+        locDict = {}
+
+        for t in test1:
+            lid = str(t.locationId)
+            color = Character.query.filter_by(id=t.characterId).first().color
+
+            if (lid in locDict):
+                tempArr = locDict[lid]
+                tempArr.append(color)
+                locDict[lid] = tempArr
+            else:
+                locDict[lid] = [color]
+            
+        mapDict = emptyDict()
+
+        for key in locDict:
+            spots = MapSpot.query.filter_by(locationId=int(key)).all()
+            tempArr = locDict[key]
+
+            for i in range(0, len(tempArr)):
+                color = tempArr[i]
+                spot = spots[i]
+                tempRow = spot.row
+                tempCol = spot.col
+                rowStr = f"row{tempRow}"
+                mapDict[rowStr][tempCol] = color
+        
+        return mapDict
+
+    def __repr__(self) -> str:
+        return f"<MapSpot {self.id}, row: {self.row}, col: {self.col}, lid: {self.locationId}>"
+
 
 
 # Paths Table

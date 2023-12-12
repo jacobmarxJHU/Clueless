@@ -356,6 +356,7 @@ class MapSpot(db.Model):
     row = Column(Integer, nullable=False)
     col = Column(Integer, nullable=False)
     locationId = Column(Integer, ForeignKey('cs.Locations.id'), nullable=False)
+    occupied = Column(Boolean)
 
 
 # Paths Table
